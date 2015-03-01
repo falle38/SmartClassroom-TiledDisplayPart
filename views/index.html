@@ -1,0 +1,45 @@
+﻿<!doctype html>
+<html>
+	<head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+        <meta name="viewport" content="width = 320, initial-scale = 0.5, user-scalable = no">
+
+        <title>(Client) Slide Sharing in Real Time</title>
+
+        <!-- Load local jQuery.  -->
+        <!--<script src="http://code.jquery.com/jquery-latest.js"></script>-->
+        <script src="/includes/jquery/jquery.js"></script>
+        <script src="/includes/modernizr.min.js"></script>
+        <!-- Load local lib and tests. -->
+        <script src="/includes/jquery.pep.js"></script>
+        <script src="/includes/flowplayer.min.js"></script>
+        <!--<script type="text/javascript" src="C:\configTable.ini"></script>-->
+        <script src="/nowjs/now.js"></script>
+        <script src="/js/main.js"></script>
+        <script src="/js/callback.js"></script>
+        <script src="/js/nowCallback.js"></script>
+        <script src="/js/loadMedia.js"></script>
+        <!--[if lt IE 9]><script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+
+        <link rel="stylesheet" href="css/style.css">
+        <link rel="stylesheet" href="css/default.css">
+        
+	</head>
+	<body>
+        <audio loop controls id="audio" style="visibility:hidden;">
+            <source src="static/snk.mp3" type="audio/mp3">
+            Your browser does not support the audio element.
+        </audio>
+        <div class="display">
+        </div>
+        <div class="menu">
+            <ul>
+                <li class="netvibes" id="buttonAddWindow"><a title="Add Window">Add Window</a></li>
+                <li class="rss" id="buttonLoadVideo"><a title="Load Video">Load Video</a></li>
+            </ul>
+        </div>
+	</body>
+</html>
