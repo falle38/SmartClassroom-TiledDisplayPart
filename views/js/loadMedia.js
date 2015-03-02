@@ -11,7 +11,7 @@ function loadVideoTiledDisplay(windowId, url) {
     video.addEventListener('loadedmetadata', function () {
         console.log("METADATA")
         //var canvas = createCanvas(windowId, "VIDEO", this.videoWidth, this.videoHeight);
-       var canvas = createCanvas(windowId, "VIDEO", 400, 300);
+       var canvas = createCanvas(windowId, "VIDEO", 400, 300,"video_tiled");
        var ctx = canvas.getContext('2d');
        ctx.drawImage(this, 0, 0, this.videoWidth, this.videoHeight);
         
@@ -34,7 +34,7 @@ function loadVideoNormalDisplay(windowId, url) {
         //var canvas = createCanvas(windowId, "VIDEO", this.videoWidth, this.videoHeight);
         //var ctx = canvas.getContext('2d');
         //ctx.drawImage(this, 0, 0, this.videoWidth, this.videoHeight);
-        var canvas = createCanvas(windowId, url, 400, 300);
+        var canvas = createCanvas(windowId, url, 400, 300,"video_normal");
         var ctx = canvas.getContext('2d');
         ctx.drawImage(this, 0, 0, canvas.width, canvas.height);
         launchVideoNormalDisplay(windowId);
@@ -48,4 +48,38 @@ function loadInputFile(div) {
     input.type = "file";
     input.className = "upload";
     
+}
+
+function loadPdf(windowId, url) {
+
+    //PDFJS.disableWorker = true;
+    var canvasToDraw = createCanvas(windowId, url, 400, 300, "pdf");
+    var drawContext = canvasToDraw.getContext('2d');
+    
+    PDFJS.getDocument('/static/helloworld.pdf').then(function (pdf) {
+        // Using promise to fetch the page
+        pdf.getPage(1).then(function (page) {
+            var scale = 1.5;
+            var viewport = page.getViewport(scale);
+            
+            //
+            // Prepare canvas using PDF page dimensions
+            //
+            var backing_canvas = document.getElementById("backing_" + canvasToDraw.id);
+            backing_canvas.height = viewport.height;
+            backing_canvas.width = viewport.width;
+            var backing_context = backing_canvas.getContext('2d');
+             
+            //
+            // Render PDF page into canvas context
+            //
+            var renderContext = {
+                canvasContext: backing_context,
+                viewport: viewport
+            };
+            page.render(renderContext).promise.then(function () {
+                drawContext.drawImage(backing_canvas, 0, 0, canvasToDraw.width, canvasToDraw.height);
+            });;
+        });
+    });
 }

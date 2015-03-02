@@ -4,7 +4,6 @@ var notHead = false;
 var buttonMenuPressed = false;
 var nbWindow = 0;
 var fullWindowState;
-var saveCanvas;
 
 var windowList = new Object();
 
@@ -102,17 +101,32 @@ function getWindow(windowId) {
     return document.getElementById('window' + windowId);
 }
 
-function createCanvas(windowId, title, width, height) {
+function createCanvas(windowId,title, width, height, type) {
     var canvasToDraw = document.createElement('canvas');
     canvasToDraw.id = 'canvas' + windowId;
     canvasToDraw.width = width;
     canvasToDraw.height = height;
+    
+    var backing_canvas = document.createElement("canvas");
+    backing_canvas.id = "backing_" + canvasToDraw.id;
+    backing_canvas.style.display = "none";
+
     var windowDiv = addWindow(windowId, title, width + 10, height + 5);
     windowDiv.getElementsByClassName('window-form')[0].appendChild(canvasToDraw);
+    windowDiv.getElementsByClassName('window-form')[0].appendChild(backing_canvas);
     $("#" + canvasToDraw.id).mousedown(function (e) {
         console.log("FULLWINDOW");
         fullWindow(e.currentTarget);
     });
+    
+  
+    
+
+
+    var media = {"type":type} 
+    windowList[canvasToDraw.id] = media;
+    
+
     return canvasToDraw;
 };
 
@@ -144,13 +158,20 @@ function fullWindow(canvas) {
 
         console.log(window);
         var draw = canvasToDraw.getContext('2d');
-        saveCanvas = canvasToDraw;
+        //saveCanvas = canvasToDraw;
+        
+        if (windowList[canvas.id].type == "pdf") {
+            reloadCanvas(canvas);
+           
+        }
+
         $("body").append(canvasToDraw);
 
         window.addEventListener('resize', function (e) {
             console.log("RESIZE");
             canvasToDraw.width = window.innerWidth;
             canvasToDraw.height = window.innerHeight;
+            draw.drawImage(canvas, 0, 0, canvasToDraw.width, canvasToDraw.height);
         }, false);
 
         canvas.addEventListener('draw', function (e) {
@@ -160,21 +181,22 @@ function fullWindow(canvas) {
         }, false);
 
         canvasToDraw.addEventListener('mousedown', function (e) {
-            console.log("FULLSCREEN END");
             cancelFullScreen(document.documentElement);
             canvas.width = saveWidth;
             canvas.height = saveHeight;
             canvas.style.display = saveDisplay;
-            $("#" + saveCanvas.id).remove();
+            reloadCanvas(canvas)
+            $("#" + canvasToDraw.id).remove();
             fullWindowState = false;
         }, false);
 
     }
 }
 
-function getGroupeOrientationState(){
-
-
+function reloadCanvas(canvas){
+    var backing_canvas = document.getElementById("backing_" + canvas.id);
+    var draw = canvas.getContext('2d');
+    draw.drawImage(backing_canvas, 0, 0, canvas.width, canvas.height);
 }
 
 function launchFullScreen(element) {
@@ -232,6 +254,13 @@ function initializeEventListener() {
         var fileUrl = window.URL.createObjectURL(inputFile.files[0]);
         console.log(inputFile.files);
         loadVideoTiledDisplay(nbWindow, fileUrl);
+    });
+    
+    $(".load-pdf").mousedown(function (e) {
+        
+        var inputFile = document.getElementById('input-pdf');
+        var fileUrl = window.URL.createObjectURL(inputFile.files[0]);
+        loadPdf(nbWindow, fileUrl);
     });
 
     $("#buttonLoadVideo").mouseup(function (e) {

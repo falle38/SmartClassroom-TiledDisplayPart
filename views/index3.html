@@ -23,6 +23,7 @@
         <!-- Load local lib and tests. -->
         <script src="/includes/jquery.pep.js"></script>
         <script src="/includes/flowplayer.min.js"></script>
+        <script src="/includes/pdf.js"></script>
 
         <!--<script type="text/javascript" src="C:\configTable.ini"></script>-->
         <script src="/nowjs/now.js"></script>
@@ -92,7 +93,7 @@
                                                             <li><a class="icon icon-phone" href="#">URL</a></li>
                                                         </ul>
 
-                                                    </liclass>
+                                                    </li>
                                                     <li class="icon icon-arrow-left"><a class="icon icon-phone" href="#">Select Tables</a>
                                                         <div class="mp-level">
                                                             Select Tables
@@ -123,53 +124,16 @@
                                 </div>
                             </li>
 							<li class="icon icon-arrow-left">
-								<a class="icon icon-display" href="#">Devices</a>
-								<div class="mp-level">
-									<h2 class="icon icon-display">Devices</h2>
-									<a class="mp-back" href="#">back</a>
-									<ul>
-										<li class="icon icon-arrow-left">
-											<a class="icon icon-phone" href="#">Mobile Phones</a>
-											<div class="mp-level">
-												<h2>Mobile Phones</h2>
-												<a class="mp-back" href="#">back</a>
-												<ul>
-													<li><a href="#">Super Smart Phone</a></li>
-													<li><a href="#">Thin Magic Mobile</a></li>
-													<li><a href="#">Performance Crusher</a></li>
-													<li><a href="#">Futuristic Experience</a></li>
-												</ul>
-											</div>
-										</li>
-										<li class="icon icon-arrow-left">
-											<a class="icon icon-tv" href="#">Televisions</a>
-											<div class="mp-level">
-												<h2>Televisions</h2>
-												<a class="mp-back" href="#">back</a>
-												<ul>
-													<li><a href="#">Flat Superscreen</a></li>
-													<li><a href="#">Gigantic LED</a></li>
-													<li><a href="#">Power Eater</a></li>
-													<li><a href="#">3D Experience</a></li>
-													<li><a href="#">Classic Comfort</a></li>
-												</ul>
-											</div>
-										</li>
-										<li class="icon icon-arrow-left">
-											<a class="icon icon-camera" href="#">Cameras</a>
-											<div class="mp-level">
-												<h2>Cameras</h2>
-												<a class="mp-back" href="#">back</a>
-												<ul>
-													<li><a href="#">Smart Shot</a></li>
-													<li><a href="#">Power Shooter</a></li>
-													<li><a href="#">Easy Photo Maker</a></li>
-													<li><a href="#">Super Pixel</a></li>
-												</ul>
-											</div>
-										</li>
-									</ul>
-								</div>
+								<a class="icon icon-display" href="#">PDF</a>
+                                <div class="mp-level" id="choose">
+                                    <h2 class="icon icon-display">PDF</h2>
+                                    <a class="mp-back" href="#">back</a>
+                                    <input class="input-file" type="file" id="input-pdf">
+                                    <label for="input-pdf" class="input-file-trigger" tabindex="0">Select a file...</label>
+                                    <p class="file-return"></p>
+                                    <div class="load-file load-pdf">Load PDF</div>
+
+                                </div>
 							</li>
 							<li class="icon icon-arrow-left">
 								<a class="icon icon-news" href="#">Magazines</a>

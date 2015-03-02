@@ -83,7 +83,7 @@ $(document).ready(function () {
             // re initialize the backing canvas
             //ctx.clearRect(0, 0, w, h);
             // ctx.drawImage(v, 0, 0, w, h);
-            var canvas = document.createElement("canvas");
+            var canvas = document.getElementbyId("canvas");
             canvas.width = w;
             canvas.height = h;
             var context = canvas.getContext('2d');
@@ -148,7 +148,7 @@ $(document).ready(function () {
 
     launchTiledDisplay = function (windowId, title) {
         console.log("LAUNCHING");
-        createCanvas(windowId, title, 400, 300);
+        createCanvas(windowId,title, 400, 300, "video_tiled" );
         // initializeAudioplayer(now.id, windowId);
         ReadyToReceiveVideo(windowId);
     };
@@ -175,7 +175,7 @@ $(document).ready(function () {
         
         // when the image loaded, draw the image on HTML5 canvas
         img.addEventListener("load", function () {
-            var canvas = document.createElement("canvas");
+            var canvas = document.getElementById("backing_"+ canvasToDraw.id);
             canvas.width = img.width;
             canvas.height = img.height;
             var context = canvas.getContext('2d');
