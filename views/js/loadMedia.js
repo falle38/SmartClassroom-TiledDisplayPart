@@ -83,3 +83,10 @@ function loadPdf(windowId, url) {
         });
     });
 }
+
+function loadSharedWindow(windowId) {
+    
+    var canvasToDraw = createCanvas(windowId, "SHARED MAIN", 400, 300, "shared");
+    shareWindow(windowId);
+    
+}

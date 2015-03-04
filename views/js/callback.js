@@ -8,6 +8,7 @@ $(document).ready(function () {
     callbackConnected = function (data) {
         infos = data;
         initializeEventListener();
+        createFullscreenCanvas()
         //initialize audio link for flowplayer
         initializeAudioLink(infos.id);
         menu = new mlPushMenu(document.getElementById('mp-menu'), document.getElementById('trigger'));
@@ -215,7 +216,23 @@ $(document).ready(function () {
 
         });
     };
+    
+    
+    
+    createSharedWindow = function (windowId) {
+        createCanvas(windowId, "SHARED TEST", 400, 300, "shared");
+    };
 
+    // called from server - to update the image data just for this client page
+    // the data is a base64-encoded image
+    updateWindowPosition = function (windowId, top, left) {
+        var window = getWindow(windowId);
+        window.style.top = top + "px";
+        window.style.left = left + "px";      
+    };
+
+    
+    
 
     playVideo = function () {
         document.getElementById("video").play();

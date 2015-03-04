@@ -12,6 +12,14 @@ $(function () {
     now.launchTiledDisplay = function (windowId, title) {
         launchTiledDisplay(windowId, title);
     };
+    
+    now.updateWindowPosition = function (windowId, top, left) {
+        updateWindowPosition(windowId, top, left);
+    };
+
+    now.createSharedWindow = function (windowId) {
+        createSharedWindow(windowId);
+    };
 
     now.broadcastVideo = function (windowId, isPlayingAudio) {
         broadcastVideo(windowId, isPlayingAudio);
@@ -42,6 +50,15 @@ $(function () {
 
     shareImage = function (windowID, image) {
         now.shareImage(windowID, image);
+    };
+    
+    
+    shareWindowPosition = function (windowID, top, left) {
+        now.shareWindowPosition(windowID, top, left);
+    };
+    
+    shareWindow = function (windowID) {
+        now.shareWindow(windowID);
     };
 
     streamAudioToClient = function (videoPath) {

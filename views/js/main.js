@@ -7,7 +7,7 @@ var fullWindowState;
 
 var windowList = new Object();
 
-function addWindow(windowId, title, width, height) {
+function addWindow(windowId, title, width, height, type) {
     // Your existing code unmodified...
     var windowDiv = document.createElement('div');
     windowDiv.className = 'window pepo';
@@ -50,7 +50,9 @@ function addWindow(windowId, title, width, height) {
                 //obj.$el.css({ background : 'red'});
             },
             drag: function (ev, obj) {
-
+                if (type == "shared") {
+                    now.shareWindowPosition(windowId, obj.$el.context.offsetTop, obj.$el.context.offsetLeft);
+                }
             },
 
             stop: function (ev, obj) {
@@ -111,7 +113,7 @@ function createCanvas(windowId,title, width, height, type) {
     backing_canvas.id = "backing_" + canvasToDraw.id;
     backing_canvas.style.display = "none";
 
-    var windowDiv = addWindow(windowId, title, width + 10, height + 5);
+    var windowDiv = addWindow(windowId, title, width + 10, height + 5, type);
     windowDiv.getElementsByClassName('window-form')[0].appendChild(canvasToDraw);
     windowDiv.getElementsByClassName('window-form')[0].appendChild(backing_canvas);
     $("#" + canvasToDraw.id).mousedown(function (e) {
@@ -135,11 +137,7 @@ function fullWindow(canvas) {
     if (!fullWindowState) {
         fullWindowState = true;
         // Canvas goes full window
-        var canvasToDraw = document.createElement('canvas');
-        canvasToDraw.className = "canvasFullWindow";
-        canvasToDraw.id = "canvasFullscreen";
-        //wrapper.className = "wrapperFullfullWindow";
-        
+        var canvasToDraw = document.getElementById('canvasFullscreen');        
 
         launchFullScreen(document.documentElement);
 
@@ -150,6 +148,7 @@ function fullWindow(canvas) {
 
         canvasToDraw.width = window.innerWidth;
         canvasToDraw.height = window.innerHeight;
+        canvasToDraw.style.display = "inline";
 
         canvas.style.display = "none";
         canvas.width = window.innerWidth;
@@ -165,7 +164,7 @@ function fullWindow(canvas) {
            
         }
 
-        $("body").append(canvasToDraw);
+       // $("body").append(canvasToDraw);
 
         window.addEventListener('resize', function (e) {
             console.log("RESIZE");
@@ -173,25 +172,32 @@ function fullWindow(canvas) {
             canvasToDraw.height = window.innerHeight;
             draw.drawImage(canvas, 0, 0, canvasToDraw.width, canvasToDraw.height);
         }, false);
-
-        canvas.addEventListener('draw', function (e) {
+        
+        var listener = function(e) {
             console.log("EVENT DRAW");
             draw.drawImage(canvas, 0, 0, canvasToDraw.width, canvasToDraw.height);
+        }
+        
 
-        }, false);
+        canvas.addEventListener('draw', listener, false);
 
         canvasToDraw.addEventListener('mousedown', function (e) {
+            console.log("END FULL");
             cancelFullScreen(document.documentElement);
             canvas.width = saveWidth;
             canvas.height = saveHeight;
             canvas.style.display = saveDisplay;
             reloadCanvas(canvas)
-            $("#" + canvasToDraw.id).remove();
+            canvas.removeEventListener("draw", listener,false);
+            e.currentTarget.style.display = "none";
+           // $("#" + canvasToDraw.id).remove();
             fullWindowState = false;
         }, false);
 
     }
 }
+
+
 
 function reloadCanvas(canvas){
     var backing_canvas = document.getElementById("backing_" + canvas.id);
@@ -221,6 +227,15 @@ function cancelFullScreen() {
         document.msExitFullscreen();
     }
 }
+
+function createFullscreenCanvas() {
+    var canvasFullscreen = document.createElement('canvas');
+    canvasFullscreen.className = "canvasFullWindow";
+    canvasFullscreen.id = "canvasFullscreen";
+    canvasFullscreen.style.display = "none";
+    $("body").append(canvasFullscreen);
+}
+
 
 function initializeEventListener() {
 
@@ -261,6 +276,10 @@ function initializeEventListener() {
         var inputFile = document.getElementById('input-pdf');
         var fileUrl = window.URL.createObjectURL(inputFile.files[0]);
         loadPdf(nbWindow, fileUrl);
+    });
+    
+    $(".load-shared-window").mousedown(function (e) {
+        loadSharedWindow(nbWindow);
     });
 
     $("#buttonLoadVideo").mouseup(function (e) {

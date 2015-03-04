@@ -160,6 +160,33 @@ sendAudioDataToStreamList = function (data) {
     }
 }
 
+// called from client - just execute one client context (host)
+everyone.now.shareWindowPosition = function (windowId, top, left) {
+    // update the data to the other clients other than host
+    everyone.now.updateWindowPosition(windowId, top, left);
+};
+
+// called from client - just execute one client context (host)
+everyone.now.shareWindow = function (windowId) {
+    // update the data to the other clients other than host
+    everyone.now.filterShareWindow(windowId, this.now.id);
+};
+
+// called from client - just execute one client context (host)
+everyone.now.filterShareWindow = function (windowId, hostId) {
+    // update the data to the other clients other than host
+    if (this.now.id == hostId) return;
+    this.now.createSharedWindow(windowId);
+
+};
+
+
+
+sendAudioDataToStreamList = function (data) {
+    for (var i in clientAudioStreamList) {
+        clientAudioStreamList[i].write(data);
+    }
+}
 
 everyone.now.streamAudioToClient = function(videoPath){
     var proc = ffmpeg(videoPath)
