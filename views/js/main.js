@@ -67,6 +67,37 @@ function addWindow(windowId, title, width, height, type) {
             }
         });
     });
+    
+$("#window-header" + windowId).on("touchstart",function (evt) {
+	evt.preventDefault();
+	var touch = evt.changedTouches;
+	console.log(evt);
+        $("#" + evt.currentTarget.parentElement.id).pep({
+            constrainTo: 'parent',
+            start: function (ev, obj) {
+                if (notHead) {
+                    $.pep.unbind($("#" + evt.currentTarget.parentElement.id));
+                }
+                //obj.$el.css({ background : 'red'});
+            },
+            drag: function (ev, obj) {
+                if (type == "shared") {
+                    now.shareWindowPosition(windowId, obj.$el.context.offsetTop, obj.$el.context.offsetLeft);
+                }
+            },
+
+            stop: function (ev, obj) {
+                var vel = obj.velocity();
+                //console.log(vel);
+
+                if (vel.x > 1500 || vel.y > 1500 || vel.x < -1500 || vel.y < -1500) {
+                    console.log("TABLE SUIVANTE");
+                    //obj.$el.css({ background : 'green'}); 
+                }
+                $.pep.unbind($("#" + evt.currentTarget.parentElement.id));
+            }
+        });
+    });    
     nbWindow++;
     return windowDiv;
 }
@@ -103,12 +134,149 @@ function getWindow(windowId) {
     return document.getElementById('window' + windowId);
 }
 
+
+
+
+function createVideoControls(windowId, width, height){
+    var toolbar = document.createElement('div');
+    toolbar.className = 'video-controls transparent';
+    toolbar.id = "video-controls"+ windowId;
+    //toolbar.width = width;
+    //toolbar.height = height;
+    toolbar.style.display = "none";
+    
+    var video = document.getElementById("video" + windowId);
+
+    var current_time = document.createElement('div');
+    current_time.className = 'video-currentTime';
+    current_time.id = "video-currentTime" + windowId;
+    current_time.innerHTML = "0";
+    
+    var play = document.createElement('div');
+    play.className = 'play-video';
+    play.id = 'play-video' + windowId;
+    play.innerHTML = "PLAY";
+    
+    var current_time2 = document.createElement('div');
+    current_time2.className = 'video-time';
+    current_time2.id = "video-time3";
+    console.log(video.duration)
+    current_time2.innerHTML = video.duration;
+    
+    var current_time3 = document.createElement('div');
+    current_time3.className = 'video-time';
+    current_time3.id = "video-time4";
+    current_time3.innerHTML = "0";
+    
+    var current_time4 = document.createElement('div');
+    current_time4.className = 'video-time';
+    current_time4.id = "video-time5";
+    current_time4.innerHTML = "0";
+ 
+    var seekBar = document.createElement('input');
+    seekBar.type = "range";
+    seekBar.className = ' video-slider fill fill--1';
+    seekBar.id = 'video-slider' + windowId;
+    seekBar.value = '0';
+    
+    styles.push('');
+
+    video.addEventListener("timeupdate", function () {
+        console.log("PLAY")
+        seekBar.value = ((100 * video.currentTime) / video.duration);
+        document.getElementById('video-currentTime' + windowId).innerHTML = seekBar.value;
+        var idx = seekBar.id.split('r')[1];
+        
+        if (seekBar.classList.contains('fill')) {
+            styles[windowId] = getFillStyle(seekBar);
+        }
+        else {
+            styles[windowId] = '';
+        }
+        
+        if (seekBar.classList.contains('tip')) {
+            styles[windowId] += getTipStyle(seekBar);
+        }
+        
+        s.textContent = styles.join('');
+
+    }, false);
+
+    seekBar.addEventListener('input', function () {
+        video.currentTime = (this.value * video.duration) / 100;
+        document.getElementById('video-currentTime' + windowId).innerHTML = this.value;
+        
+        if (this.classList.contains('fill')) {
+            styles[windowId] = getFillStyle(this);
+        }
+        else {
+            styles[windowId] = '';
+        }
+        
+        s.textContent = styles.join('');
+    }, false);
+    
+    
+    
+
+    play.addEventListener('mousedown', function () {
+   
+        if (video.paused) { 
+            this.innerHTML = "PAUSE";
+            video.play();
+        }
+        else {
+            this.innerHTML = "PLAY";
+            video.pause();
+        }
+    }, false);
+    
+    
+    
+
+    toolbar.appendChild(seekBar);
+    toolbar.appendChild(play);
+    toolbar.appendChild(current_time);
+    
+    toolbar.appendChild(current_time2);
+    toolbar.appendChild(current_time3);
+    toolbar.appendChild(current_time4);
+    
+    return toolbar;
+}
+
 function createCanvas(windowId,title, width, height, type) {
     var canvasToDraw = document.createElement('canvas');
     canvasToDraw.id = 'canvas' + windowId;
     canvasToDraw.width = width;
     canvasToDraw.height = height;
     
+    
+    
+
+    //$("#" + canvasToDraw.id).mouseover(
+    //    function (e) {
+    //        console.log("ADAM")
+    //        //$('#tlbar').slideDown(200);
+    //        $('#r3').slideDown(200);
+    //    },
+    //            function () {
+    //        //$('#tlbar').slideUp(200);
+    //        $('#r3').slideUp(200);
+    //    }
+    //);
+    
+    //$(toolbar.id).hover(
+    //    function () {
+    //        $(this).removeClass('transparent');
+    //    },
+    //            function () {
+    //        $(this).addClass('transparent');
+    //    }
+    //);
+    
+    
+
     var backing_canvas = document.createElement("canvas");
     backing_canvas.id = "backing_" + canvasToDraw.id;
     backing_canvas.style.display = "none";
@@ -116,14 +284,37 @@ function createCanvas(windowId,title, width, height, type) {
     var windowDiv = addWindow(windowId, title, width + 10, height + 5, type);
     windowDiv.getElementsByClassName('window-form')[0].appendChild(canvasToDraw);
     windowDiv.getElementsByClassName('window-form')[0].appendChild(backing_canvas);
-    $("#" + canvasToDraw.id).mousedown(function (e) {
-        console.log("FULLWINDOW");
-        fullWindow(e.currentTarget);
+    
+    
+    
+    var videoControls = createVideoControls(windowId, width, height);
+    windowDiv.appendChild(videoControls);
+    
+    var timeoutIdentifier;
+    
+    $("#" + videoControls.id).mousemove(function (e) {        
+        if (timeoutIdentifier) {
+            clearTimeout(timeoutIdentifier);
+        }
+        timeoutIdentifier = setTimeout(function () {
+            $("#" + videoControls.id).slideUp(200);
+        }, 5000); 
+    });
+
+    $("#" + canvasToDraw.id).mousemove (function (e) {
+        $("#" + videoControls.id).slideDown(200);
+        
+        if (timeoutIdentifier) {
+            clearTimeout(timeoutIdentifier);
+        }
+        timeoutIdentifier = setTimeout(function () {
+            $("#" + videoControls.id).slideUp(200);
+        }, 5000); 
     });
     
-  
+   
     
-
+   
 
     var media = {"type":type} 
     windowList[canvasToDraw.id] = media;
@@ -325,3 +516,14 @@ function getOffset(el) {
     }
     return { top: _y, left: _x };
 }
+var s = document.createElement('style'), 
+    r = document.querySelectorAll('input[type=range]'), 
+    n_r = r.length, 
+    styles = [], 
+    pp = ['-webkit-slider-runnable-', '-moz-range-'],
+    n_pp = pp.length;
+
+manageControlBar = function () {
+    document.getElementsByTagName('body')[0].appendChild(s);
+}   
+

@@ -11,6 +11,7 @@ $(document).ready(function () {
         createFullscreenCanvas()
         //initialize audio link for flowplayer
         initializeAudioLink(infos.id);
+        manageControlBar();
         menu = new mlPushMenu(document.getElementById('mp-menu'), document.getElementById('trigger'));
 
         audioplayer = flowplayer("audioPlayer", "/includes/flowplayer.swf", {
@@ -48,7 +49,7 @@ $(document).ready(function () {
 
         //var canvas = document.createElement("canvas");
         // get HTML5 video handler
-        var video = document.getElementById("video");
+        var video = document.getElementById("video"+ windowId);
 
       //  canvas.width = video.videoWidth;
         //canvas.height = video.videoHeight;
@@ -74,7 +75,7 @@ $(document).ready(function () {
         // draw the video into HTML5 canvas
         var draw = function (v, w, h) {
             var window = getWindow(windowId);
-            var canvasToDraw = window.getElementsByClassName('window-form')[0].getElementsByTagName("canvas")[0];
+            var canvasToDraw = document.getElementById("canvas" + windowId);
             var drawContext = canvasToDraw.getContext('2d');
 
             //var ctx = canvas.getContext('2d');
@@ -84,12 +85,12 @@ $(document).ready(function () {
             // re initialize the backing canvas
             //ctx.clearRect(0, 0, w, h);
             // ctx.drawImage(v, 0, 0, w, h);
-            var canvas = document.getElementbyId("canvas");
-            canvas.width = w;
-            canvas.height = h;
-            var context = canvas.getContext('2d');
-            //context.drawImage(v, 0, 0, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
-            drawContext.drawImage(v, 0, 0, canvasToDraw.width, canvasToDraw.height);
+            var backing_canvas = document.getElementById("backing_canvas" + windowId);
+            backing_canvas.width = w;
+            backing_canvas.height = h;
+            var backing_context = backing_canvas.getContext('2d');
+            backing_context.drawImage(v, 0, 0, backing_canvas.width, backing_canvas.height, 0, 0, backing_canvas.width, backing_canvas.height);
+            drawContext.drawImage(backing_canvas, 0, 0, canvasToDraw.width, canvasToDraw.height);
             canvasToDraw.dispatchEvent(event);
             setTimeout(draw, 16, v, w, h);
         };        
@@ -101,7 +102,7 @@ $(document).ready(function () {
         var canvas = document.createElement("canvas");
         var context = canvas.getContext('2d');
         // get HTML5 video handler
-        var video = document.getElementById("video");
+        var video = document.getElementById("video" + windowId);
 
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
