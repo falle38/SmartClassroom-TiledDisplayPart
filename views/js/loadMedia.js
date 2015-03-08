@@ -1,18 +1,18 @@
 function loadVideoTiledDisplay(windowId, url) {
     var video = document.createElement('video');
-    video.id = "video";
+    video.id = "video" + windowId;
     video.style.display = "none";
     video.src = url;
     video.autoplay = false;
     video.loop = true;
     video.muted = false;
-    getWindow(windowId).appendChild(video);
-   // $('body').append(video);
+    //getWindow(windowId).appendChild(video);
+    $('body').append(video);
     console.log(video)
     video.addEventListener('loadedmetadata', function () {
         console.log("METADATA")
         //var canvas = createCanvas(windowId, "VIDEO", this.videoWidth, this.videoHeight);
-       var canvas = createCanvas(windowId, "VIDEO", 400, 300,"video_tiled");
+       var canvas = createCanvas(windowId, "VIDEO", 400, 300,"video",true);
        var ctx = canvas.getContext('2d');
        ctx.drawImage(this, 0, 0, this.videoWidth, this.videoHeight);
         
@@ -36,7 +36,7 @@ function loadVideoNormalDisplay(windowId, url) {
         //var canvas = createCanvas(windowId, "VIDEO", this.videoWidth, this.videoHeight);
         //var ctx = canvas.getContext('2d');
         //ctx.drawImage(this, 0, 0, this.videoWidth, this.videoHeight);
-        var canvas = createCanvas(windowId, url, 400, 300, "video_normal");
+        var canvas = createCanvas(windowId, "VIDEO", 400, 300, "video", true);
 
         var ctx = canvas.getContext('2d');
         ctx.drawImage(this, 0, 0, canvas.width, canvas.height);
@@ -54,7 +54,7 @@ function loadInputFile(div) {
 function loadPdf(windowId, url) {
 
     //PDFJS.disableWorker = true;
-    var canvasToDraw = createCanvas(windowId, url, 400, 300, "pdf");
+    var canvasToDraw = createCanvas(windowId, "PDF", 400, 300, "pdf", true);
     var drawContext = canvasToDraw.getContext('2d');
     
     PDFJS.getDocument('/static/helloworld.pdf').then(function (pdf) {
@@ -86,7 +86,7 @@ function loadPdf(windowId, url) {
 }
 
 function loadSharedWindow(windowId) {
-    var canvasToDraw = createCanvas(windowId, "SHARED MAIN", 400, 300, "shared");
+    var canvasToDraw = createCanvas(windowId, "SHARED MAIN", 400, 300, "shared", true);
     shareWindow(windowId);
     
 }

@@ -1,12 +1,12 @@
 
 
     var infos;
-    var event = new Event('draw');
+    
     var event1 = new Event('closeMenu');
     var audioplayer;
     var menu;
-$(document).ready(function () { 
-
+$(document).ready(function () {
+    var event = new Event('draw');
     callbackConnected = function (data) {
         infos = data;
         initializeEventListener();
@@ -59,7 +59,7 @@ $(document).ready(function () {
     };
 
     launchVideoNormalDisplay = function (windowId) {
-        menu.trigger.dispatchEvent(event1);
+      //  menu.trigger.dispatchEvent(event1);
         //initializeAudioplayer(now.id, windowId);
         console.log("PLAYING NORMAL");
 
@@ -119,7 +119,7 @@ $(document).ready(function () {
         var context = canvas.getContext('2d');
         // get HTML5 video handler
         var video = document.getElementById("video" + windowId);
-
+        console.log(video);
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         $(canvas).css("display", "none");
@@ -160,13 +160,13 @@ $(document).ready(function () {
         }
         else {
             //Play video directly if there is no audio to stream
-            video.play();
+            //video.play();
         }
     }
 
     launchTiledDisplay = function (windowId, title) {
         console.log("LAUNCHING");
-        createCanvas(windowId,title, 400, 300, "video_tiled" );
+        createCanvas(windowId,title, 400, 300, "video",false);
         // initializeAudioplayer(now.id, windowId);
         ReadyToReceiveVideo(windowId);
     };

@@ -157,12 +157,23 @@
     opacity: 0.6;
 }
 
+.fullscreen-controls {
+    /*text-align: center;*/
+    width: 100%;
+    height: 45px;
+    position: absolute;
+    margin: 0px;
+    padding:0px;
+    border-top: 2px solid #ccc;
+    background-color: #000;
+}
+
 .video-controls {
     /*text-align: center;*/
     width: 100%;
     height: 45px;
     position: absolute;
-    margin-top: -54px;
+    margin-top: -45px;
     border-top: 2px solid #ccc;
     background-color: #000;
 }

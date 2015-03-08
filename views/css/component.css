@@ -6,7 +6,11 @@
     box-sizing: border-box;
 }
 
-html, body, .container, .scroller,.display {
+html,body{
+    height: 100%;
+}
+
+ .container, .scroller,.display {
 	height: 97.5%;
 }
 
