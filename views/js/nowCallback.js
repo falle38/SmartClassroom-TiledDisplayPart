@@ -13,8 +13,8 @@ $(function () {
         launchTiledDisplay(windowId, title);
     };
     
-    now.updateWindowPosition = function (windowId, top, left) {
-        updateWindowPosition(windowId, top, left);
+    now.updateWindowPosition = function (windowId, orientation, top, left) {
+        updateWindowPosition(windowId, orientation, top, left);
     };
 
     now.createSharedWindow = function (windowId) {
@@ -52,9 +52,13 @@ $(function () {
         now.shareImage(windowID, image);
     };
     
+    getWindowId = function () {
+        return now.getWindowId();
+    };
     
-    shareWindowPosition = function (windowID, top, left) {
-        now.shareWindowPosition(windowID, top, left);
+
+    shareWindowPosition = function (windowID, orientation, top, left) {
+        now.shareWindowPosition(windowID, orientation, top, left);
     };
     
     shareWindow = function (windowID) {
@@ -66,3 +70,24 @@ $(function () {
     };
 
 });
+
+function askServerLoadVideoTiledDisplay(url) {
+    now.getWindowId("video-tiled", url);
+}
+
+function askServerLoadVideoNormalDisplay(url) {
+    now.getWindowId("video-normal", url);
+}
+
+
+function askServerLoadPdf(url) {
+    now.getWindowId("pdf", url);
+}
+
+function askServerLoadSharedWindow() {
+    now.getWindowId("shared");
+}
+
+now.launchWindow = function (windowId, type, url) {
+    launchWindow(windowId, type, url);
+};

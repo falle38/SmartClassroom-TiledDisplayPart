@@ -2,7 +2,7 @@
 
 var notHead = false;
 var buttonMenuPressed = false;
-var nbWindow = 0;
+//var nbWindow = 0;
 var fullWindowState;
 
 var windowList = new Object();
@@ -16,33 +16,33 @@ function addWindow(windowId, title, width, height, type) {
     var windowHeader = document.createElement('header');
     windowHeader.className = 'window-header';
     windowHeader.id = 'window-header' + windowId;
-
+    
     var iconPrevA = document.createElement('a');
     iconPrevA.className = 'icon-prev';
-
+    
     var iconCloseA = document.createElement('a');
     iconCloseA.className = 'icon-close';
     iconCloseA.innerHTML = "x";
     var WindowNameH2 = document.createElement('h2');
     WindowNameH2.innerHTML = title;
-
+    
     windowHeader.appendChild(iconPrevA);
     windowHeader.appendChild(iconCloseA);
     windowHeader.appendChild(WindowNameH2);
-
+    
     var windowFormDiv = document.createElement('div');
     windowFormDiv.className = 'window-form';
     //windowFormDiv.innerHTML = "Content";
     windowFormDiv.style.height = height + 'px';
-
+    
     windowDiv.appendChild(windowHeader);
     windowDiv.appendChild(windowFormDiv);
-
+    
     document.getElementsByClassName('display')[0].appendChild(windowDiv);
-
+    
     $("#window-header" + windowId).mousedown(function (e) {
         $("#" + e.currentTarget.parentElement.id).pep({
-            constrainTo: 'parent',
+           // constrainTo: 'parent',
             start: function (ev, obj) {
                 if (notHead) {
                     $.pep.unbind($("#" + e.currentTarget.parentElement.id));
@@ -51,14 +51,19 @@ function addWindow(windowId, title, width, height, type) {
             },
             drag: function (ev, obj) {
                 if (type == "shared") {
-                    now.shareWindowPosition(windowId, obj.$el.context.offsetTop, obj.$el.context.offsetLeft);
+                    now.shareWindowPosition(windowId, infos.orientation, obj.$el.context.offsetTop, obj.$el.context.offsetLeft);
                 }
             },
-
+            
+            easing: function (ev, obj) {
+                if (type == "shared") {
+                    now.shareWindowPosition(windowId, infos.orientation, obj.$el.context.offsetTop, obj.$el.context.offsetLeft);
+                }
+            },
             stop: function (ev, obj) {
                 var vel = obj.velocity();
                 //console.log(vel);
-
+                
                 if (vel.x > 1500 || vel.y > 1500 || vel.x < -1500 || vel.y < -1500) {
                     console.log("TABLE SUIVANTE");
                     //obj.$el.css({ background : 'green'}); 
@@ -68,10 +73,10 @@ function addWindow(windowId, title, width, height, type) {
         });
     });
     
-$("#window-header" + windowId).on("touchstart",function (evt) {
-	evt.preventDefault();
-	var touch = evt.changedTouches;
-	console.log(evt);
+    $("#window-header" + windowId).on("touchstart", function (evt) {
+        evt.preventDefault();
+        var touch = evt.changedTouches;
+        console.log(evt);
         $("#" + evt.currentTarget.parentElement.id).pep({
             constrainTo: 'parent',
             start: function (ev, obj) {
@@ -85,11 +90,11 @@ $("#window-header" + windowId).on("touchstart",function (evt) {
                     now.shareWindowPosition(windowId, obj.$el.context.offsetTop, obj.$el.context.offsetLeft);
                 }
             },
-
+            
             stop: function (ev, obj) {
                 var vel = obj.velocity();
                 //console.log(vel);
-
+                
                 if (vel.x > 1500 || vel.y > 1500 || vel.x < -1500 || vel.y < -1500) {
                     console.log("TABLE SUIVANTE");
                     //obj.$el.css({ background : 'green'}); 
@@ -97,8 +102,8 @@ $("#window-header" + windowId).on("touchstart",function (evt) {
                 $.pep.unbind($("#" + evt.currentTarget.parentElement.id));
             }
         });
-    });    
-    nbWindow++;
+    });
+    //nbWindow++;
     return windowDiv;
 }
 
@@ -137,16 +142,16 @@ function getWindow(windowId) {
 
 
 
-function createVideoControls(windowId, width, height){
+function createVideoControls(windowId, width, height) {
     var toolbar = document.createElement('div');
     toolbar.className = 'video-controls transparent';
-    toolbar.id = "video-controls"+ windowId;
+    toolbar.id = "video-controls" + windowId;
     //toolbar.width = width;
     //toolbar.height = height;
     toolbar.style.display = "none";
     
     var video = document.getElementById("video" + windowId);
-
+    
     var current_time = document.createElement('div');
     current_time.className = 'video-currentTime';
     current_time.id = "video-currentTime" + windowId;
@@ -172,7 +177,7 @@ function createVideoControls(windowId, width, height){
     current_time4.className = 'video-time';
     current_time4.id = "video-time5";
     current_time4.innerHTML = "0";
- 
+    
     var seekBar = document.createElement('input');
     seekBar.type = "range";
     seekBar.className = ' video-slider fill fill--1';
@@ -180,7 +185,7 @@ function createVideoControls(windowId, width, height){
     seekBar.value = '0';
     
     styles.push('');
-
+    
     video.addEventListener("timeupdate", function () {
         console.log("PLAY")
         seekBar.value = ((100 * video.currentTime) / video.duration);
@@ -201,7 +206,7 @@ function createVideoControls(windowId, width, height){
         s.textContent = styles.join('');
 
     }, false);
-
+    
     seekBar.addEventListener('input', function () {
         video.currentTime = (this.value * video.duration) / 100;
         document.getElementById('video-currentTime' + windowId).innerHTML = this.value;
@@ -218,10 +223,10 @@ function createVideoControls(windowId, width, height){
     
     
     
-
+    
     play.addEventListener('mousedown', function () {
-   
-        if (video.paused) { 
+        
+        if (video.paused) {
             this.innerHTML = "PAUSE";
             video.play();
         }
@@ -233,7 +238,7 @@ function createVideoControls(windowId, width, height){
     
     
     
-
+    
     toolbar.appendChild(seekBar);
     toolbar.appendChild(play);
     toolbar.appendChild(current_time);
@@ -245,7 +250,7 @@ function createVideoControls(windowId, width, height){
     return toolbar;
 }
 
-function createCanvas(windowId,title, width, height, type) {
+function createCanvas(windowId, title, width, height, type) {
     var canvasToDraw = document.createElement('canvas');
     canvasToDraw.id = 'canvas' + windowId;
     canvasToDraw.width = width;
@@ -253,7 +258,7 @@ function createCanvas(windowId,title, width, height, type) {
     
     
     
-
+    
     //$("#" + canvasToDraw.id).mouseover(
     //    function (e) {
     //        console.log("ADAM")
@@ -276,50 +281,50 @@ function createCanvas(windowId,title, width, height, type) {
     //);
     
     
-
+    
     var backing_canvas = document.createElement("canvas");
     backing_canvas.id = "backing_" + canvasToDraw.id;
     backing_canvas.style.display = "none";
-
+    
     var windowDiv = addWindow(windowId, title, width + 10, height + 5, type);
     windowDiv.getElementsByClassName('window-form')[0].appendChild(canvasToDraw);
     windowDiv.getElementsByClassName('window-form')[0].appendChild(backing_canvas);
     
     
-    
-    var videoControls = createVideoControls(windowId, width, height);
-    windowDiv.appendChild(videoControls);
-    
-    var timeoutIdentifier;
-    
-    $("#" + videoControls.id).mousemove(function (e) {        
-        if (timeoutIdentifier) {
-            clearTimeout(timeoutIdentifier);
-        }
-        timeoutIdentifier = setTimeout(function () {
-            $("#" + videoControls.id).slideUp(200);
-        }, 5000); 
-    });
-
-    $("#" + canvasToDraw.id).mousemove (function (e) {
-        $("#" + videoControls.id).slideDown(200);
+    if (type == "video_normal") {
+        var videoControls = createVideoControls(windowId, width, height);
+        windowDiv.appendChild(videoControls);
         
-        if (timeoutIdentifier) {
-            clearTimeout(timeoutIdentifier);
-        }
-        timeoutIdentifier = setTimeout(function () {
-            $("#" + videoControls.id).slideUp(200);
-        }, 5000); 
-    });
+        var timeoutIdentifier;
+        
+        $("#" + videoControls.id).mousemove(function (e) {
+            if (timeoutIdentifier) {
+                clearTimeout(timeoutIdentifier);
+            }
+            timeoutIdentifier = setTimeout(function () {
+                $("#" + videoControls.id).slideUp(200);
+            }, 5000);
+        });
+        
+        $("#" + canvasToDraw.id).mousemove(function (e) {
+            $("#" + videoControls.id).slideDown(200);
+            
+            if (timeoutIdentifier) {
+                clearTimeout(timeoutIdentifier);
+            }
+            timeoutIdentifier = setTimeout(function () {
+                $("#" + videoControls.id).slideUp(200);
+            }, 5000);
+        });
     
-   
+    }
     
-   
-
-    var media = {"type":type} 
+    
+    
+    var media = { "type": type }
     windowList[canvasToDraw.id] = media;
     
-
+    
     return canvasToDraw;
 };
 
@@ -328,24 +333,24 @@ function fullWindow(canvas) {
     if (!fullWindowState) {
         fullWindowState = true;
         // Canvas goes full window
-        var canvasToDraw = document.getElementById('canvasFullscreen');        
-
+        var canvasToDraw = document.getElementById('canvasFullscreen');
+        
         launchFullScreen(document.documentElement);
-
+        
         saveWidth = canvas.width
         saveHeight = canvas.height
         saveDisplay = canvas.style.display;
-
-
+        
+        
         canvasToDraw.width = window.innerWidth;
         canvasToDraw.height = window.innerHeight;
         canvasToDraw.style.display = "inline";
-
+        
         canvas.style.display = "none";
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
         
-
+        
         console.log(window);
         var draw = canvasToDraw.getContext('2d');
         //saveCanvas = canvasToDraw;
@@ -354,9 +359,9 @@ function fullWindow(canvas) {
             reloadCanvas(canvas);
            
         }
-
-       // $("body").append(canvasToDraw);
-
+        
+        // $("body").append(canvasToDraw);
+        
         window.addEventListener('resize', function (e) {
             console.log("RESIZE");
             canvasToDraw.width = window.innerWidth;
@@ -364,14 +369,14 @@ function fullWindow(canvas) {
             draw.drawImage(canvas, 0, 0, canvasToDraw.width, canvasToDraw.height);
         }, false);
         
-        var listener = function(e) {
+        var listener = function (e) {
             console.log("EVENT DRAW");
             draw.drawImage(canvas, 0, 0, canvasToDraw.width, canvasToDraw.height);
         }
         
-
+        
         canvas.addEventListener('draw', listener, false);
-
+        
         canvasToDraw.addEventListener('mousedown', function (e) {
             console.log("END FULL");
             cancelFullScreen(document.documentElement);
@@ -379,9 +384,9 @@ function fullWindow(canvas) {
             canvas.height = saveHeight;
             canvas.style.display = saveDisplay;
             reloadCanvas(canvas)
-            canvas.removeEventListener("draw", listener,false);
+            canvas.removeEventListener("draw", listener, false);
             e.currentTarget.style.display = "none";
-           // $("#" + canvasToDraw.id).remove();
+            // $("#" + canvasToDraw.id).remove();
             fullWindowState = false;
         }, false);
 
@@ -390,21 +395,17 @@ function fullWindow(canvas) {
 
 
 
-function reloadCanvas(canvas){
+function reloadCanvas(canvas) {
     var backing_canvas = document.getElementById("backing_" + canvas.id);
     var draw = canvas.getContext('2d');
     draw.drawImage(backing_canvas, 0, 0, canvas.width, canvas.height);
 }
 
 function launchFullScreen(element) {
-    if (element.requestFullscreen)
-    { element.requestFullscreen(); }
-    else if (element.mozRequestFullScreen)
-    { element.mozRequestFullScreen(); }
-    else if (element.webkitRequestFullscreen)
-    { element.webkitRequestFullscreen(); }
-    else if (element.msRequestFullscreen)
-    { element.msRequestFullscreen(); }
+    if (element.requestFullscreen) { element.requestFullscreen(); }
+    else if (element.mozRequestFullScreen) { element.mozRequestFullScreen(); }
+    else if (element.webkitRequestFullscreen) { element.webkitRequestFullscreen(); }
+    else if (element.msRequestFullscreen) { element.msRequestFullscreen(); }
 }
 
 function cancelFullScreen() {
@@ -429,76 +430,51 @@ function createFullscreenCanvas() {
 
 
 function initializeEventListener() {
-
-    $("#buttonAddWindow").mousedown(function (e) {
-        console.log("MAIN");
-        buttonMenuPressed = true;
-    });
-
-    $("#buttonAddWindow").mouseup(function (e) {
-        if (buttonMenuPressed) {
-            addWindow(nbWindow, "SUDOKU", 400, 200);
-            buttonMenuPressed = false;
-        }
-    });
-
-    $("#buttonloadvideo").mousedown(function (e) {
-        buttonmenupressed = true;
-    });
-
     $(".load-normal-display").mousedown(function (e) {
         console.log("LOADING");
         var inputFile = document.getElementById('input-video-normal-display');
         var fileUrl = window.URL.createObjectURL(inputFile.files[0]);
         
-        loadVideoNormalDisplay(nbWindow, fileUrl);
+        askServerLoadVideoNormalDisplay(fileUrl);
     });
-
+    
     $(".load-tiled-display").mousedown(function (e) {
         
-        var inputFile =document.getElementById('input-video-tiled-display');
+        var inputFile = document.getElementById('input-video-tiled-display');
         var fileUrl = window.URL.createObjectURL(inputFile.files[0]);
         console.log(inputFile.files);
-        loadVideoTiledDisplay(nbWindow, fileUrl);
+        askServerLoadVideoTiledDisplay(fileUrl);
     });
     
     $(".load-pdf").mousedown(function (e) {
         
         var inputFile = document.getElementById('input-pdf');
         var fileUrl = window.URL.createObjectURL(inputFile.files[0]);
-        loadPdf(nbWindow, fileUrl);
+        askServerLoadPdf(fileUrl);
     });
     
     $(".load-shared-window").mousedown(function (e) {
-        loadSharedWindow(nbWindow);
+        askServerLoadSharedWindow();
     });
-
-    $("#buttonLoadVideo").mouseup(function (e) {
-        if (buttonMenuPressed) {
-            console.log("PRESSED");
-            loadVideo(nbWindow, "/static/snk.mp4");
-            buttonMenuPressed = false;
-        }
-    });
-
+    
     $(".display").on("mousedown", "a.icon-close", function (e) {
         notHead = true;
     });
-
+    
     $(".display").on("mouseup", "a.icon-close", function (e) {
         e.currentTarget.parentElement.parentElement.parentElement.removeChild(e.currentTarget.parentElement.parentElement);
     });
-
+    
     $(".display").mouseup(function (e) {
         notHead = false;
     });
-
+    
     // action lorsque le label est cliqué
     $(".input-file-trigger").on("mousedown", function (e) {
         $(".input-file").focus();
         return false;
     });
-
+    
     // affiche un retour visuel dès que input:file change
     $(".input-file").on("change", function (e) {
         e.currentTarget.parentElement.getElementsByClassName("file-return").innerHTML = this.value;
@@ -525,5 +501,5 @@ var s = document.createElement('style'),
 
 manageControlBar = function () {
     document.getElementsByTagName('body')[0].appendChild(s);
-}   
+}
 

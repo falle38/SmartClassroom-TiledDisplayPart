@@ -49,7 +49,6 @@ function loadInputFile(div) {
     var input = document.createElement('input');
     input.type = "file";
     input.className = "upload";
-    
 }
 
 function loadPdf(windowId, url) {
@@ -87,7 +86,6 @@ function loadPdf(windowId, url) {
 }
 
 function loadSharedWindow(windowId) {
-    
     var canvasToDraw = createCanvas(windowId, "SHARED MAIN", 400, 300, "shared");
     shareWindow(windowId);
     

@@ -1,10 +1,12 @@
-$(document).ready(function () {
+
 
     var infos;
     var event = new Event('draw');
     var event1 = new Event('closeMenu');
     var audioplayer;
     var menu;
+$(document).ready(function () { 
+
     callbackConnected = function (data) {
         infos = data;
         initializeEventListener();
@@ -37,10 +39,24 @@ $(document).ready(function () {
         console.log(infos);
     }
 
-
     setAudioPlayer = function (player) {
         audioplayer = player;
     }
+    
+    launchWindow = function (windowId, type, url) {
+        if (type == "video-tiled") {
+            loadVideoTiledDisplay(windowId, url);
+        }
+        else if (type == "video-normal") {
+            loadVideoNormalDisplay(windowId, url)
+        }
+        else if (type == "pdf") {
+            loadPdf(windowId, url);
+        }
+        else if (type == "shared") {
+            loadSharedWindow(windowId);
+        }
+    };
 
     launchVideoNormalDisplay = function (windowId) {
         menu.trigger.dispatchEvent(event1);
@@ -226,10 +242,89 @@ $(document).ready(function () {
 
     // called from server - to update the image data just for this client page
     // the data is a base64-encoded image
-    updateWindowPosition = function (windowId, top, left) {
+    updateWindowPosition = function (windowId, orientationRemoteClient, top, left) {
         var window = getWindow(windowId);
-        window.style.top = top + "px";
-        window.style.left = left + "px";      
+        window.style.removeProperty('-webkit-transition');
+        window.style.removeProperty('transition');
+        
+        
+        var display = document.getElementsByClassName("display")[0];
+
+        if (infos.orientation == "NW") {
+            if (orientationRemoteClient == "NE") {
+                left = left + display.clientWidth;
+                window.style.top = top + "px";
+                window.style.left = left + "px";
+            }
+            else if (orientationRemoteClient == "SW") {
+                top = top + display.clientHeight;
+                window.style.top = top + "px";
+                window.style.left = left + "px";
+            }
+            else if (orientationRemoteClient == "SE") {
+                left = left + display.clientWidth;
+                top = top + display.clientHeight;
+                window.style.top = top + "px";
+                window.style.left = left + "px";
+            }
+            
+        }
+        else if (infos.orientation == "NE") {
+            if (orientationRemoteClient == "NW") {
+                left = left - display.clientWidth;
+                window.style.top = top + "px";
+                window.style.left = left + "px";
+            }
+            else if (orientationRemoteClient == "SW") {
+                left = left - display.clientWidth;
+                top = top + display.clientHeight;
+                window.style.top = top + "px";
+                window.style.left = left + "px";
+            }
+            else if (orientationRemoteClient == "SE") {
+                top = top + display.clientHeight;
+                window.style.top = top + "px";
+                window.style.left = left + "px";
+            }
+        }
+        else if (infos.orientation == "SW") {
+            if (orientationRemoteClient == "NE") {
+                left = left + display.clientWidth;
+                top = top - display.clientHeight;
+                window.style.top = top + "px";
+                window.style.left = left + "px";
+            }
+            else if (orientationRemoteClient == "NW") {
+                top = top - display.clientHeight;
+                window.style.top = top + "px";
+                window.style.left = left + "px";
+            }
+            else if (orientationRemoteClient == "SE") {
+                left = left + display.clientWidth;
+                window.style.top = top + "px";
+                window.style.left = left + "px";
+            }
+        }
+        else if (infos.orientation == "SE") {
+            if (orientationRemoteClient == "NW") {
+                left = left - display.clientWidth;
+                top = top - display.clientHeight;
+                window.style.top = top + "px";
+                window.style.left = left + "px";
+            }
+            else if (orientationRemoteClient == "NE") {
+                top = top - display.clientHeight;
+                window.style.top = top + "px";
+                window.style.left = left + "px";
+            }
+            else if (orientationRemoteClient == "SW") {
+                left = left - display.clientWidth;
+                window.style.top = top + "px";
+                window.style.left = left + "px";
+            }
+        }
+        
+              
     };
 
     

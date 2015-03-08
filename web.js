@@ -65,10 +65,14 @@ var clientList = new Object();
 var hosts = new Object();
 
 var orientation = new Object();
-orientation["NW"]=false;
-orientation["NE"]=false;
-orientation["SW"]=false;
-orientation["SE"]=false;
+orientation["NW"] = false;
+orientation["NE"] = false;
+orientation["SW"] = false;
+orientation["SE"] = false;
+
+var nbWindow = 0;
+
+
 
 // trigger when each client user connect to nowjs
 nowjs.on('connect', function () {
@@ -112,6 +116,11 @@ nowjs.on('disconnect', function() {
         delete clientList[this.now.id];
     }
 });
+
+everyone.now.getWindowId = function (type, url) {
+    this.now.launchWindow(nbWindow, type, url);
+    nbWindow++;
+};
 
 // called from client - just execute one client context (host)
 everyone.now.askTiledDisplay = function (windowId,title,isPlayingAudio) {
@@ -161,10 +170,20 @@ sendAudioDataToStreamList = function (data) {
 }
 
 // called from client - just execute one client context (host)
-everyone.now.shareWindowPosition = function (windowId, top, left) {
+everyone.now.shareWindowPosition = function (windowId, orientation, top, left) {
     // update the data to the other clients other than host
-    everyone.now.updateWindowPosition(windowId, top, left);
+    everyone.now.filterShareWindowPosition(windowId, orientation, top, left, this.now.id);
 };
+
+// called from client - just execute one client context (host)
+everyone.now.filterShareWindowPosition = function (windowId, orientation, top, left, hostId) {
+    // update the data to the other clients other than host
+    if (this.now.id == hostId) return;
+    this.now.updateWindowPosition(windowId, orientation, top, left);
+
+};
+
+
 
 // called from client - just execute one client context (host)
 everyone.now.shareWindow = function (windowId) {
