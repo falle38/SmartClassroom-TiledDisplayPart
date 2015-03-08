@@ -132,7 +132,6 @@ function initializeAudioplayer(id, windowId) {
             autoBuffering: true,
             autoPlay: false,
             onBegin: function () {
-                console.log("META");
                 ReadyToPlayAudio(windowId);
             }
         }
@@ -146,27 +145,10 @@ function getWindow(windowId) {
 }
 
 
-function createFullscreenControls() {
-    var toolbar = document.createElement('div');
-    toolbar.className = 'fullscreen-controls transparent';
-    toolbar.id = "fullscreen-controls-id";
-    //toolbar.width = width;
-    //toolbar.height = height;
-    toolbar.style.display = "none";
-
-    var stop_fullscreen = document.createElement('div');
-    stop_fullscreen.className = 'play-video';
-    stop_fullscreen.id = 'stop-fullscreen';
-    stop_fullscreen.innerHTML = "Stop Fullscreen";
-    
-    toolbar.appendChild(stop_fullscreen);
-    return toolbar;
-}
-
 function createVideoControls(windowId, isFullscreen) {
     
     if (isFullscreen) {
-        var ID = "fullscreen";
+        var ID = "-fullscreen";
     }
     else {
         var ID = windowId;
@@ -195,7 +177,6 @@ function createVideoControls(windowId, isFullscreen) {
     var current_time2 = document.createElement('div');
     current_time2.className = 'video-time';
     current_time2.id = "video-time3";
-    console.log(video.duration)
     current_time2.innerHTML = video.duration;
     
     var current_time3 = document.createElement('div');
@@ -217,7 +198,6 @@ function createVideoControls(windowId, isFullscreen) {
     styles.push('');
     
     video.addEventListener("timeupdate", function () {
-        console.log("PLAY")
         seekBar.value = ((100 * video.currentTime) / video.duration);
         document.getElementById('video-currentTime' + ID).innerHTML = seekBar.value;
         var idx = seekBar.id.split('r')[1];
@@ -266,9 +246,7 @@ function createVideoControls(windowId, isFullscreen) {
         }
     }, false);
     
-    
-    
-    
+
     toolbar.appendChild(seekBar);
     toolbar.appendChild(play);
     toolbar.appendChild(current_time);
@@ -385,10 +363,10 @@ function fullWindow(canvas) {
         
         
         var videoControls = createVideoControls(canvas.id.split('canvas')[1], true);
-        
-        //videoControls.style.marginTop = "30px";
+        videoControls.style.marginTop = "-37px";
         $("body").append(videoControls);
-        
+
+        var fullscreenButton = document.getElementById('close-fullscreen');
         var timeoutIdentifier;
         
         $("#" + videoControls.id).mousemove(function (e) {
@@ -424,19 +402,17 @@ function fullWindow(canvas) {
         // $("body").append(canvasToDraw);
         
         window.addEventListener('resize', function (e) {
-            console.log("RESIZE");
+
             canvasToDraw.width = window.innerWidth;
             canvasToDraw.height = window.innerHeight;
             draw.drawImage(canvas, 0, 0, canvasToDraw.width, canvasToDraw.height);
         }, false);
         
         var listener = function (e) {
-            console.log("EVENT DRAW");
             draw.drawImage(canvas, 0, 0, canvasToDraw.width, canvasToDraw.height);
         }
         
         var endFullscreen = function (e) {
-            console.log("END FULL");
             cancelFullScreen(document.documentElement);
             canvas.width = saveWidth;
             canvas.height = saveHeight;
@@ -445,16 +421,20 @@ function fullWindow(canvas) {
             canvas.style.display = saveDisplay;
             reloadCanvas(canvas)
             canvas.removeEventListener("draw", listener, false);
-            e.currentTarget.style.display = "none";
+            canvasToDraw.style.display = "none";
             // $("#" + canvasToDraw.id).remove();
             fullWindowState = false;
-            canvasToDraw.removeEventListener("mousedown", endFullscreen, false);
+            $("#fullscreen-controls-id").slideUp(200);
+            
+            
+            document.body.removeChild(videoControls);
+            fullscreenButton.removeEventListener("mousedown", endFullscreen, false);
         }
         
 
         
         canvas.addEventListener('draw', listener, false);
-        canvasToDraw.addEventListener('mousedown',endFullscreen , false);
+        fullscreenButton.addEventListener('mousedown',endFullscreen , false);
 
     }
 }
@@ -504,7 +484,6 @@ function createFullscreenCanvas() {
 
 function initializeEventListener() {
     $(".load-normal-display").mousedown(function (e) {
-        console.log("LOADING");
         var inputFile = document.getElementById('input-video-normal-display');
         var fileUrl = window.URL.createObjectURL(inputFile.files[0]);
         
@@ -515,7 +494,6 @@ function initializeEventListener() {
         
         var inputFile = document.getElementById('input-video-tiled-display');
         var fileUrl = window.URL.createObjectURL(inputFile.files[0]);
-        console.log(inputFile.files);
         askServerLoadVideoTiledDisplay(fileUrl);
     });
     
