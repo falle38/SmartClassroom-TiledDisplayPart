@@ -18,8 +18,8 @@ $(function () {
         remoteMediaControl(windowId, mediaType, controlType, value);
     }
     
-    askRemoteMediaControl = function (windowId, mediaType, controlType, value) {
-        now.askRemoteMediaControl(windowId, mediaType, controlType, value);
+    askRemoteMediaControl = function (windowId, mediaType, controlType, value, isForEveryone) {
+        now.askRemoteMediaControl(windowId, mediaType, controlType, value, isForEveryone);
     }
 
     // called from server - to update the image data just for this client page

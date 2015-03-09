@@ -11,10 +11,10 @@ function loadVideoTiledDisplay(windowId, url) {
     console.log(video)
     video.addEventListener('loadedmetadata', function () {
         //var canvas = createCanvas(windowId, "VIDEO", this.videoWidth, this.videoHeight);
-       var canvas = createCanvas(windowId, "VIDEO", 400, 300,"video",true, true);
+       var data = { "duration": video.duration, "currentTime": video.currentTime, "paused": video.paused };
+       var canvas = createCanvas(windowId, "VIDEO", 400, 300,"video",true, true, data);
        var ctx = canvas.getContext('2d');
        ctx.drawImage(this, 0, 0, this.videoWidth, this.videoHeight);
-       var data = { "duration": video.duration, "currentTime": video.currentTime };
        askTiledDisplay(windowId, "VIDEO",false, data);
     });
 }

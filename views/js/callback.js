@@ -8,6 +8,7 @@ var menu;
 
 $(document).ready(function () {
     var event = new Event('draw');
+    var eventEndFullscreen = new Event('endfullscreen');
     var eventTimeUpdate = new Event('dataupdate');
     callbackConnected = function (data) {
         infos = data;
@@ -65,6 +66,41 @@ $(document).ready(function () {
             if (controlType == "seekbar") {
                     var video = document.getElementById('video' + windowId)
                     video.currentTime = (value * video.duration) / 100;
+            }
+            else if (controlType == "play") {
+                if (value == "event") {
+                    var canvas = document.getElementById('canvas' + windowId);
+                    windowList[canvas.id].data.paused = false;
+                    var play = document.getElementById('play-video' + windowId);
+                    play.innerHTML = "PAUSE";
+                }
+                else {
+                    var video = document.getElementById('video' + windowId);
+                    var play = document.getElementById('play-video' + windowId);
+                    play.innerHTML = "PAUSE";
+                    video.play();
+                }
+
+            }
+            else if (controlType == "pause") {
+                if (value == "event") {
+                    var canvas = document.getElementById('canvas' + windowId);
+                    windowList[canvas.id].data.paused = true;
+                    var play = document.getElementById('play-video' + windowId);
+                    play.innerHTML = "PLAY";
+                }
+                else {
+                    var video = document.getElementById('video' + windowId);
+                    var play = document.getElementById('play-video' + windowId);
+                    play.innerHTML = "PLAY";
+                    video.pause();
+                }
+            }
+            else if (controlType == "endfullscreen") {
+                var canvas = document.getElementById('canvas' + windowId);
+                windowList[canvas.id].isTiled = false;
+                canvas.dispatchEvent(eventEndFullscreen);
+
             }
         }
     }
@@ -363,9 +399,6 @@ $(document).ready(function () {
               
     };
 
-    
-    
-
     playVideo = function () {
         document.getElementById("video").play();
     };
@@ -374,6 +407,4 @@ $(document).ready(function () {
         document.getElementById("audio").play();
         //audioplayer.toggle();
     };
-
-
 });
