@@ -10,7 +10,6 @@ function loadVideoTiledDisplay(windowId, url) {
     $('body').append(video);
     console.log(video)
     video.addEventListener('loadedmetadata', function () {
-        console.log("METADATA")
         //var canvas = createCanvas(windowId, "VIDEO", this.videoWidth, this.videoHeight);
        var canvas = createCanvas(windowId, "VIDEO", 400, 300,"video",true, true);
        var ctx = canvas.getContext('2d');

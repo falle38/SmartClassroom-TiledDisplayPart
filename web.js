@@ -123,7 +123,10 @@ everyone.now.getWindowId = function (type, url) {
 };
 
 
-
+// called from client - just execute one client context (host)
+everyone.now.askRemoteMediaControl = function (windowId, mediaType, controlType, value) {
+    clientList[hosts[windowId].client].object.now.remoteMediaControl(windowId, mediaType, controlType, value);
+};
 
 
 

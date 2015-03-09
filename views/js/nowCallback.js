@@ -13,6 +13,14 @@ $(function () {
     shareData = function (windowId, data) {
         now.shareData(windowId, data);
     };
+    
+    now.remoteMediaControl= function (windowId, mediaType, controlType, value){
+        remoteMediaControl(windowId, mediaType, controlType, value);
+    }
+    
+    askRemoteMediaControl = function (windowId, mediaType, controlType, value) {
+        now.askRemoteMediaControl(windowId, mediaType, controlType, value);
+    }
 
     // called from server - to update the image data just for this client page
     // the data is a base64-encoded image

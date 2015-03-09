@@ -149,9 +149,7 @@ function getWindow(windowId) {
     return document.getElementById('window' + windowId);
 }
 
-
 function createVideoControls(windowId, isFullscreen, isMaster) {
-    
     if (isFullscreen) {
         var ID = "-fullscreen";
     }
@@ -161,8 +159,6 @@ function createVideoControls(windowId, isFullscreen, isMaster) {
     var toolbar = document.createElement('div');
     toolbar.className = 'video-controls transparent';
     toolbar.id = "video-controls" + ID;
-    //toolbar.width = width;
-    //toolbar.height = height;
     toolbar.style.display = "none";
 
     var canvas = document.getElementById("canvas" + windowId);
@@ -172,7 +168,6 @@ function createVideoControls(windowId, isFullscreen, isMaster) {
     else {
         var video = windowList[canvas.id].data;
     }
-    
     
     var current_time = document.createElement('div');
     current_time.className = 'video-currentTime';
@@ -189,16 +184,6 @@ function createVideoControls(windowId, isFullscreen, isMaster) {
     current_time2.id = "video-time3";
     current_time2.innerHTML = video.duration;
     
-    var current_time3 = document.createElement('div');
-    current_time3.className = 'video-time';
-    current_time3.id = "video-time4";
-    current_time3.innerHTML = "0";
-    
-    var current_time4 = document.createElement('div');
-    current_time4.className = 'video-time';
-    current_time4.id = "video-time5";
-    current_time4.innerHTML = "0";
-    
     var seekBar = document.createElement('input');
     seekBar.type = "range";
     seekBar.className = ' video-slider fill fill--1';
@@ -206,10 +191,12 @@ function createVideoControls(windowId, isFullscreen, isMaster) {
     seekBar.value = '0';
     
     styles.push('');
-    if (isMaster) {
+
+    // Case isFullscreen : The event listener will be set outside this function to remove it easily
+    if (isMaster && !isFullscreen) {
         video.addEventListener("timeupdate", function () {
             var data = { "duration": video.duration, "currentTime": video.currentTime };
-                shareData(windowId, data);
+            shareData(windowId, data);
             seekBar.value = ((100 * video.currentTime) / video.duration);
             document.getElementById('video-currentTime' + ID).innerHTML = seekBar.value;
             
@@ -218,22 +205,17 @@ function createVideoControls(windowId, isFullscreen, isMaster) {
             }
             else {
                 styles[ID] = '';
-            }
-            
+            }  
             if (seekBar.classList.contains('tip')) {
                 styles[ID] += getTipStyle(seekBar);
             }
-            
             s.textContent = styles.join('');
 
         }, false);
     }
-    else {
-        canvas.addEventListener("dataupdate", function () {
-            
-            var data = { "duration": video.duration, "currentTime": video.currentTime };
-            console.log(data);
-            
+    // Case isFullscreen : The event listener will be set outside this function to remove it easily
+    else if(!isFullscreen) {
+        canvas.addEventListener("dataupdate", function () {      
             seekBar.value = ((100 * video.currentTime) / video.duration);
             document.getElementById('video-currentTime' + ID).innerHTML = seekBar.value;
             
@@ -242,33 +224,30 @@ function createVideoControls(windowId, isFullscreen, isMaster) {
             }
             else {
                 styles[ID] = '';
-            }
-            
+            } 
             if (seekBar.classList.contains('tip')) {
                 styles[ID] += getTipStyle(seekBar);
             }
-            
             s.textContent = styles.join('');
-
         }, false);
     }
 
     seekBar.addEventListener('input', function () {
-        video.currentTime = (this.value * video.duration) / 100;
-        document.getElementById('video-currentTime' + ID).innerHTML = this.value;
-        
+        if (isMaster) {
+            video.currentTime = (this.value * video.duration) / 100;
+            document.getElementById('video-currentTime' + ID).innerHTML = this.value;
+        }
+        else {
+            askRemoteMediaControl(windowId, "video", "seekbar", this.value);
+        }
         if (this.classList.contains('fill')) {
             styles[ID] = getFillStyle(this);
         }
         else {
             styles[ID] = '';
         }
-        
         s.textContent = styles.join('');
     }, false);
-    
-    
-    
     
     play.addEventListener('mousedown', function () {
         
@@ -282,15 +261,10 @@ function createVideoControls(windowId, isFullscreen, isMaster) {
         }
     }, false);
     
-
     toolbar.appendChild(seekBar);
     toolbar.appendChild(play);
     toolbar.appendChild(current_time);
-    
     toolbar.appendChild(current_time2);
-    toolbar.appendChild(current_time3);
-    toolbar.appendChild(current_time4);
-    
     return toolbar;
 }
 
@@ -299,32 +273,6 @@ function createCanvas(windowId, title, width, height, type, isMaster, isShared, 
     canvasToDraw.id = 'canvas' + windowId;
     canvasToDraw.width = width;
     canvasToDraw.height = height;
-    
-    
-    
-    
-    //$("#" + canvasToDraw.id).mouseover(
-    //    function (e) {
-    //        console.log("ADAM")
-    //        //$('#tlbar').slideDown(200);
-    //        $('#r3').slideDown(200);
-    //    },
-    //            function () {
-    //        //$('#tlbar').slideUp(200);
-    //        $('#r3').slideUp(200);
-    //    }
-    //);
-    
-    //$(toolbar.id).hover(
-    //    function () {
-    //        $(this).removeClass('transparent');
-    //    },
-    //            function () {
-    //        $(this).addClass('transparent');
-    //    }
-    //);
-    
-    
     
     var backing_canvas = document.createElement("canvas");
     backing_canvas.id = "backing_" + canvasToDraw.id;
@@ -335,7 +283,7 @@ function createCanvas(windowId, title, width, height, type, isMaster, isShared, 
     windowDiv.getElementsByClassName('window-form')[0].appendChild(canvasToDraw);
     windowDiv.getElementsByClassName('window-form')[0].appendChild(backing_canvas);
     
-    var media = { "type": type, "isTiled": false, "data": data }
+    var media = { "type": type, "isTiled": false, "isMaster": isMaster, "data": data }
     windowList[canvasToDraw.id] = media;
 
     if (type == "video") {
@@ -365,7 +313,6 @@ function createCanvas(windowId, title, width, height, type, isMaster, isShared, 
         });
     
     }
-    
     return canvasToDraw;
 };
 
@@ -373,11 +320,13 @@ function createCanvas(windowId, title, width, height, type, isMaster, isShared, 
 function fullWindow(canvas) {
     if (!fullWindowState) {
         fullWindowState = true;
+        var windowId = canvas.id.split('canvas')[1];
+        var isMaster = windowList[canvas.id].isMaster;
+
         // Canvas goes full window
         var canvasToDraw = document.getElementById('canvasFullscreen');
         //var divFullscreen = document.getElementById('divFullscreen');
         
-
         launchFullScreen(document.documentElement);
         saveLeft = canvas.parentElement.parentElement.offsetLeft;
         saveTop = canvas.parentElement.parentElement.offsetTop;
@@ -394,8 +343,54 @@ function fullWindow(canvas) {
         canvas.height = window.innerHeight;
         
         
-        var videoControls = createVideoControls(canvas.id.split('canvas')[1], true);
+        var videoControls = createVideoControls(windowId, true, isMaster);
         videoControls.style.marginTop = "-37px";
+        
+        var listenerVideoTimeUpdate = function (e) {
+            
+            var data = { "duration": this.duration, "currentTime": this.currentTime };
+            shareData(windowId, data);
+            var seekBar = document.getElementById('video-slider-fullscreen');
+            seekBar.value = ((100 * this.currentTime) / this.duration);
+            document.getElementById('video-currentTime-fullscreen').innerHTML = seekBar.value;
+            
+            if (seekBar.classList.contains('fill')) {
+                styles["-fullscreen"] = getFillStyle(seekBar);
+            }
+            else {
+                styles["-fullscreen"] = '';
+            }
+            if (seekBar.classList.contains('tip')) {
+                styles["-fullscreen"] += getTipStyle(seekBar);
+            }
+            s.textContent = styles.join('');
+        }
+
+        var listenerCanvasDataUpdate = function (e) {
+            var video = windowList[this.id].data;
+            var seekBar = document.getElementById('video-slider-fullscreen');
+            seekBar.value = ((100 * video.currentTime) / video.duration);
+            document.getElementById('video-currentTime-fullscreen').innerHTML = seekBar.value;
+            
+            if (seekBar.classList.contains('fill')) {
+                styles["-fullscreen"] = getFillStyle(seekBar);
+            }
+            else {
+                styles["-fullscreen"] = '';
+            } 
+            if (seekBar.classList.contains('tip')) {
+                styles["-fullscreen"] += getTipStyle(seekBar);
+            }
+            s.textContent = styles.join('');
+        }
+        
+        if (isMaster) {
+            var video = document.getElementById("video" + windowId);
+            video.addEventListener("timeupdate", listenerVideoTimeUpdate, false);
+        }
+        else {
+            canvas.addEventListener("dataupdate", listenerCanvasDataUpdate, false);
+        }
         $("body").append(videoControls);
 
         var fullscreenButton = document.getElementById('close-fullscreen');
@@ -425,14 +420,11 @@ function fullWindow(canvas) {
         });
         
         var draw = canvasToDraw.getContext('2d');
-        //saveCanvas = canvasToDraw;
         
         if (windowList[canvas.id].type == "pdf") {
             reloadCanvas(canvas); 
         }
-        
-        // $("body").append(canvasToDraw);
-        
+
         window.addEventListener('resize', function (e) {
 
             canvasToDraw.width = window.innerWidth;
@@ -453,21 +445,21 @@ function fullWindow(canvas) {
             canvas.style.display = saveDisplay;
             reloadCanvas(canvas)
             canvas.removeEventListener("draw", listener, false);
+            if (isMaster) {
+                video.removeEventListener("timeupdate", listenerVideoTimeUpdate, false);
+            }
+            else {
+                canvas.removeEventListener("dataupdate", listenerCanvasDataUpdate, false);
+            }
             canvasToDraw.style.display = "none";
-            // $("#" + canvasToDraw.id).remove();
             fullWindowState = false;
-            $("#fullscreen-controls-id").slideUp(200);
-            
-            
+            $("#fullscreen-controls-id").slideUp(1);     
             document.body.removeChild(videoControls);
             fullscreenButton.removeEventListener("mousedown", endFullscreen, false);
         }
         
-
-        
         canvas.addEventListener('draw', listener, false);
         fullscreenButton.addEventListener('mousedown',endFullscreen , false);
-
     }
 }
 

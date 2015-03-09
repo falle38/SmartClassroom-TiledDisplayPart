@@ -59,6 +59,17 @@ $(document).ready(function () {
             loadSharedWindow(windowId);
         }
     };
+    
+    remoteMediaControl = function (windowId, mediaType, controlType, value) {
+        if (mediaType == "video") {
+            if (controlType == "seekbar") {
+                    var video = document.getElementById('video' + windowId)
+                    video.currentTime = (value * video.duration) / 100;
+            }
+        }
+    }
+    
+    
 
     launchVideoNormalDisplay = function (windowId) {
       //  menu.trigger.dispatchEvent(event1);
