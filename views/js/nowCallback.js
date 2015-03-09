@@ -3,22 +3,29 @@ $(function () {
         callbackConnected(infos);
     };
 
-    askTiledDisplay = function (windowId,isPlayingAudio ,title, width, height) {
-        now.askTiledDisplay(windowId, isPlayingAudio, title, width, height);
+    askTiledDisplay = function (windowId, title, isPlayingAudio, data) {
+        now.askTiledDisplay(windowId, title, isPlayingAudio, data);
+    };
+    now.updateData = function (windowId, data) {
+        updateData(windowId, data);
+    };
+    
+    shareData = function (windowId, data) {
+        now.shareData(windowId, data);
     };
 
     // called from server - to update the image data just for this client page
     // the data is a base64-encoded image
-    now.launchTiledDisplay = function (windowId, title) {
-        launchTiledDisplay(windowId, title);
+    now.launchTiledDisplay = function (windowId, title, data) {
+        launchTiledDisplay(windowId, title, data);
     };
     
     now.updateWindowPosition = function (windowId, orientation, top, left) {
         updateWindowPosition(windowId, orientation, top, left);
     };
 
-    now.createSharedWindow = function (windowId) {
-        createSharedWindow(windowId);
+    now.createSharedWindow = function (windowId, title, type) {
+        createSharedWindow(windowId, title, type);
     };
 
     now.broadcastVideo = function (windowId, isPlayingAudio) {
@@ -28,6 +35,25 @@ $(function () {
     ReadyToReceiveVideo = function (windowId) {
         now.ReadyToReceiveVideo(windowId);
     };
+    
+    now.switchToTiledDisplay = function (windowId){
+        switchToTiledDisplay(windowId);
+    }
+    
+    now.switchToNormalDisplay = function (windowId) {
+        switchToNormalDisplay(windowId);
+    }
+    
+    askSwitchToTiledDisplay = function (windowId) {
+        now.askSwitchToTiledDisplay(windowId);
+    };
+    
+    // called from client - just execute one client context (host)
+    askSwitchToNormalDisplay = function (windowId) {
+        // update the data to the other clients other than host
+        now.askSwitchToNormalDisplay(windowId);
+    };
+    
 
     ReadyToPlayAudio = function (windowId) {
         now.ReadyToPlayAudio(windowId);
@@ -61,8 +87,8 @@ $(function () {
         now.shareWindowPosition(windowID, orientation, top, left);
     };
     
-    shareWindow = function (windowID) {
-        now.shareWindow(windowID);
+    shareWindow = function (windowId, title, type) {
+        now.shareWindow(windowId, title, type);
     };
 
     streamAudioToClient = function (videoPath) {

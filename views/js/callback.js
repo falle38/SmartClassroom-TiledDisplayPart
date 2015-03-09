@@ -4,9 +4,11 @@
     
     var event1 = new Event('closeMenu');
     var audioplayer;
-    var menu;
+var menu;
+
 $(document).ready(function () {
     var event = new Event('draw');
+    var eventTimeUpdate = new Event('dataupdate');
     callbackConnected = function (data) {
         infos = data;
         initializeEventListener();
@@ -164,13 +166,29 @@ $(document).ready(function () {
         }
     }
 
-    launchTiledDisplay = function (windowId, title) {
+    launchTiledDisplay = function (windowId, title, data) {
         console.log("LAUNCHING");
-        createCanvas(windowId,title, 400, 300, "video",false);
+        createCanvas(windowId,title, 400, 300, "video",false, true, data);
         // initializeAudioplayer(now.id, windowId);
         ReadyToReceiveVideo(windowId);
     };
+    
+    switchToTiledDisplay = function (windowId){
+        var canvas = document.getElementById("canvas" + windowId);
+        windowList[canvas.id].isTiled = true;
+        fullWindow(canvas);
+    }
 
+    switchToNormalDisplay = function (windowId) {
+        var canvas = document.getElementById("canvas" + windowId);
+        windowList[canvas.id].isTiled = false;
+    }
+    
+    updateData = function (windowId, data) {
+        var canvas = document.getElementById("canvas" + windowId);
+        windowList[canvas.id].data.currentTime = data.currentTime;
+        canvas.dispatchEvent(eventTimeUpdate);
+    };
 
     // called from server - to update the image data just for this client page
     // the data is a base64-encoded image
@@ -178,7 +196,7 @@ $(document).ready(function () {
 
 
         var window = getWindow(windowId);
-        var canvasToDraw = window.getElementsByClassName('window-form')[0].getElementsByTagName("canvas")[0];
+        var canvasToDraw = document.getElementById("canvas" + windowId);
         var draw = canvasToDraw.getContext('2d');
 
         //var canvasToCopy = document.createElement("canvas");
@@ -193,6 +211,8 @@ $(document).ready(function () {
         
         // when the image loaded, draw the image on HTML5 canvas
         img.addEventListener("load", function () {
+            var isTiled = windowList[canvasToDraw.id].isTiled;
+
             var canvas = document.getElementById("backing_"+ canvasToDraw.id);
             canvas.width = img.width;
             canvas.height = img.height;
@@ -202,23 +222,28 @@ $(document).ready(function () {
             var cols = 2;
             var tileX = 0;
             var tileY = 0;
-            //var tileWidth = Math.round(canvasToDraw.width / cols);
-            //var tileHeight = Math.round(canvasToDraw.height / rows);
-            var tileWidth = Math.round(img.width / cols);
-            var tileHeight = Math.round(img.height / rows);
-            var tileCenterX = tileWidth / 2;
-            var tileCenterY = tileHeight / 2;
+            var tileWidth = img.width;
+            var tileHeight = img.height;
+            
+            //If picture have to be tiled
+            if (isTiled) {
+                tileWidth = Math.round(img.width / cols);
+                tileHeight = Math.round(img.height / rows);
+                var tileCenterX = tileWidth / 2;
+                var tileCenterY = tileHeight / 2;
+                
+                if (infos.orientation == "NE") {
+                    tileX = tileX + tileWidth;
+                }
+                else if (infos.orientation == "SW") {
+                    tileY = tileY + tileHeight;
+                }
+                else if (infos.orientation == "SE") {
+                    tileX = tileX + tileWidth;
+                    tileY = tileY + tileHeight;
+                }
+            }
 
-            if (infos.orientation == "NE") {
-                tileX = tileX + tileWidth;
-            }
-            else if (infos.orientation == "SW") {
-                tileY = tileY + tileHeight;
-            }
-            else if (infos.orientation == "SE") {
-                tileX = tileX + tileWidth;
-                tileY = tileY + tileHeight;
-            }
             context.drawImage(img, tileX, tileY, tileWidth, tileHeight, 0, 0, img.width, img.height);
             draw.drawImage(canvas, 0, 0, canvasToDraw.width, canvasToDraw.height);
             canvasToDraw.dispatchEvent(event);
@@ -236,8 +261,8 @@ $(document).ready(function () {
     
     
     
-    createSharedWindow = function (windowId) {
-        createCanvas(windowId, "SHARED TEST", 400, 300, "shared");
+    createSharedWindow = function (windowId, title, type) {
+        createCanvas(windowId, "SHARED TEST", 400, 300, "shared",false, true);
     };
 
     // called from server - to update the image data just for this client page

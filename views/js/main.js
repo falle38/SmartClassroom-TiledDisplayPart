@@ -7,7 +7,8 @@ var fullWindowState;
 
 var windowList = new Object();
 
-function addWindow(windowId, title, width, height, type) {
+
+function addWindow(windowId, title, width, height, type, isShared) {
     // Your existing code unmodified...
     var windowDiv = document.createElement('div');
     windowDiv.className = 'window pepo';
@@ -56,13 +57,13 @@ function addWindow(windowId, title, width, height, type) {
                 //obj.$el.css({ background : 'red'});
             },
             drag: function (ev, obj) {
-                if (type == "shared") {
+                if (isShared) {
                     now.shareWindowPosition(windowId, infos.orientation, obj.$el.context.offsetTop, obj.$el.context.offsetLeft);
                 }
             },
             
             easing: function (ev, obj) {
-                if (type == "shared") {
+                if (isShared) {
                     now.shareWindowPosition(windowId, infos.orientation, obj.$el.context.offsetTop, obj.$el.context.offsetLeft);
                 }
             },
@@ -92,11 +93,15 @@ function addWindow(windowId, title, width, height, type) {
                 //obj.$el.css({ background : 'red'});
             },
             drag: function (ev, obj) {
-                if (type == "shared") {
+                if (isShared) {
                     now.shareWindowPosition(windowId, obj.$el.context.offsetTop, obj.$el.context.offsetLeft);
                 }
             },
-            
+            easing: function (ev, obj) {
+                if (isShared) {
+                    now.shareWindowPosition(windowId, infos.orientation, obj.$el.context.offsetTop, obj.$el.context.offsetLeft);
+                }
+            },
             stop: function (ev, obj) {
                 var vel = obj.velocity();
                 //console.log(vel);
@@ -145,7 +150,7 @@ function getWindow(windowId) {
 }
 
 
-function createVideoControls(windowId, isFullscreen) {
+function createVideoControls(windowId, isFullscreen, isMaster) {
     
     if (isFullscreen) {
         var ID = "-fullscreen";
@@ -159,9 +164,14 @@ function createVideoControls(windowId, isFullscreen) {
     //toolbar.width = width;
     //toolbar.height = height;
     toolbar.style.display = "none";
-    
-    var video = document.getElementById("video" + windowId);
-    
+
+    var canvas = document.getElementById("canvas" + windowId);
+    if (isMaster) {
+        var video = document.getElementById("video" + windowId);
+    }
+    else {
+        var video = windowList[canvas.id].data;
+    }
     
     
     var current_time = document.createElement('div');
@@ -196,27 +206,53 @@ function createVideoControls(windowId, isFullscreen) {
     seekBar.value = '0';
     
     styles.push('');
-    
-    video.addEventListener("timeupdate", function () {
-        seekBar.value = ((100 * video.currentTime) / video.duration);
-        document.getElementById('video-currentTime' + ID).innerHTML = seekBar.value;
-        var idx = seekBar.id.split('r')[1];
-        
-        if (seekBar.classList.contains('fill')) {
-            styles[ID] = getFillStyle(seekBar);
-        }
-        else {
-            styles[ID] = '';
-        }
-        
-        if (seekBar.classList.contains('tip')) {
-            styles[ID] += getTipStyle(seekBar);
-        }
-        
-        s.textContent = styles.join('');
+    if (isMaster) {
+        video.addEventListener("timeupdate", function () {
+            var data = { "duration": video.duration, "currentTime": video.currentTime };
+                shareData(windowId, data);
+            seekBar.value = ((100 * video.currentTime) / video.duration);
+            document.getElementById('video-currentTime' + ID).innerHTML = seekBar.value;
+            
+            if (seekBar.classList.contains('fill')) {
+                styles[ID] = getFillStyle(seekBar);
+            }
+            else {
+                styles[ID] = '';
+            }
+            
+            if (seekBar.classList.contains('tip')) {
+                styles[ID] += getTipStyle(seekBar);
+            }
+            
+            s.textContent = styles.join('');
 
-    }, false);
-    
+        }, false);
+    }
+    else {
+        canvas.addEventListener("dataupdate", function () {
+            
+            var data = { "duration": video.duration, "currentTime": video.currentTime };
+            console.log(data);
+            
+            seekBar.value = ((100 * video.currentTime) / video.duration);
+            document.getElementById('video-currentTime' + ID).innerHTML = seekBar.value;
+            
+            if (seekBar.classList.contains('fill')) {
+                styles[ID] = getFillStyle(seekBar);
+            }
+            else {
+                styles[ID] = '';
+            }
+            
+            if (seekBar.classList.contains('tip')) {
+                styles[ID] += getTipStyle(seekBar);
+            }
+            
+            s.textContent = styles.join('');
+
+        }, false);
+    }
+
     seekBar.addEventListener('input', function () {
         video.currentTime = (this.value * video.duration) / 100;
         document.getElementById('video-currentTime' + ID).innerHTML = this.value;
@@ -258,7 +294,7 @@ function createVideoControls(windowId, isFullscreen) {
     return toolbar;
 }
 
-function createCanvas(windowId, title, width, height, type, isMaster) {
+function createCanvas(windowId, title, width, height, type, isMaster, isShared, data) {
     var canvasToDraw = document.createElement('canvas');
     canvasToDraw.id = 'canvas' + windowId;
     canvasToDraw.width = width;
@@ -295,13 +331,15 @@ function createCanvas(windowId, title, width, height, type, isMaster) {
     backing_canvas.style.display = "none";
     
     //var windowDiv = addWindow(windowId, title, width + 10, height + 5, type);
-    var windowDiv = addWindow(windowId, title, width, height, type);
+    var windowDiv = addWindow(windowId, title, width, height, type, isShared);
     windowDiv.getElementsByClassName('window-form')[0].appendChild(canvasToDraw);
     windowDiv.getElementsByClassName('window-form')[0].appendChild(backing_canvas);
     
-    
-    if (type == "video" && isMaster) {
-        var videoControls = createVideoControls(windowId, false);
+    var media = { "type": type, "isTiled": false, "data": data }
+    windowList[canvasToDraw.id] = media;
+
+    if (type == "video") {
+        var videoControls = createVideoControls(windowId, false, isMaster);
         windowDiv.appendChild(videoControls);
         
         var timeoutIdentifier;
@@ -327,12 +365,6 @@ function createCanvas(windowId, title, width, height, type, isMaster) {
         });
     
     }
-    
-    
-    
-    var media = { "type": type }
-    windowList[canvasToDraw.id] = media;
-    
     
     return canvasToDraw;
 };
@@ -516,6 +548,11 @@ function initializeEventListener() {
         var windowId = e.currentTarget.parentElement.parentElement.id.split('window')[1];
         var canvas = document.getElementById("canvas" + windowId);
         fullWindow(canvas);
+    });
+    
+    $(".display").on("mousedown", "label.icon-tiled", function (e) {
+        var windowId = e.currentTarget.parentElement.parentElement.id.split('window')[1];
+        askSwitchToTiledDisplay(windowId);
     });
     
     

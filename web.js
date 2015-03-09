@@ -122,22 +122,43 @@ everyone.now.getWindowId = function (type, url) {
     nbWindow++;
 };
 
+
+
+
+
+
+
 // called from client - just execute one client context (host)
-everyone.now.askTiledDisplay = function (windowId,title,isPlayingAudio) {
+everyone.now.askTiledDisplay = function (windowId,title,isPlayingAudio, data) {
     var host = { "client": this.now.id, "nbCurrent": 0, "nbExpected": 1,"isPlayingAudio":isPlayingAudio ,"nbReadyAudio": 0, "nbReadyAudioExpected": 2 }
 	
     hosts[windowId] = host;
 	
-    everyone.now.filterAskTiledDisplay(windowId, title);
+    everyone.now.filterAskTiledDisplay(windowId, title, data);
 };
 
 // called from server - execute every client context, then we can do filtering
-everyone.now.filterAskTiledDisplay = function (windowId, title) {
+everyone.now.filterAskTiledDisplay = function (windowId, title, data) {
     // by right, it will execute in every client context include host page, we need to filter out the host by delete its name
     if (this.now.id == hosts[windowId].client){ return; console.log("HOST NOT READY");}
     // ok, now we call the client side update image method, to update the screen into HTML5 canvas
-    this.now.launchTiledDisplay(windowId, title);
+    this.now.launchTiledDisplay(windowId, title, data);
 };
+
+// called from client - just execute one client context (host)
+everyone.now.shareData = function (windowId, data) {
+    // update the data to the other clients other than host
+    everyone.now.filterShareData(windowId, data, this.now.id);
+};
+
+// called from client - just execute one client context (host)
+everyone.now.filterShareData = function (windowId, data, hostId) {
+    // update the data to the other clients other than host
+    if (this.now.id == hostId) return;
+    this.now.updateData(windowId, data);
+
+};
+
 
 everyone.now.ReadyToReceiveVideo = function (windowId) {
     hosts[windowId].nbCurrent++;
@@ -163,6 +184,18 @@ everyone.now.shareImage = function (windowId, image) {
     everyone.now.updateCanvas(windowId, image);
 };
 
+// called from client - just execute one client context (host)
+everyone.now.askSwitchToTiledDisplay = function (windowId) {
+    // update the data to the other clients other than host
+    everyone.now.switchToTiledDisplay(windowId);
+};
+
+// called from client - just execute one client context (host)
+everyone.now.askSwitchToNormalDisplay = function (windowId) {
+    // update the data to the other clients other than host
+    everyone.now.switchToNormalDisplay(windowId);
+};
+
 sendAudioDataToStreamList = function (data) {
     for (var i in clientAudioStreamList) {
         clientAudioStreamList[i].write(data);
@@ -186,16 +219,16 @@ everyone.now.filterShareWindowPosition = function (windowId, orientation, top, l
 
 
 // called from client - just execute one client context (host)
-everyone.now.shareWindow = function (windowId) {
+everyone.now.shareWindow = function (windowId, title, type) {
     // update the data to the other clients other than host
-    everyone.now.filterShareWindow(windowId, this.now.id);
+    everyone.now.filterShareWindow(windowId, title, type, this.now.id);
 };
 
 // called from client - just execute one client context (host)
-everyone.now.filterShareWindow = function (windowId, hostId) {
+everyone.now.filterShareWindow = function (windowId, title, type, hostId) {
     // update the data to the other clients other than host
     if (this.now.id == hostId) return;
-    this.now.createSharedWindow(windowId);
+    this.now.createSharedWindow(windowId, title, type);
 
 };
 

@@ -12,11 +12,11 @@ function loadVideoTiledDisplay(windowId, url) {
     video.addEventListener('loadedmetadata', function () {
         console.log("METADATA")
         //var canvas = createCanvas(windowId, "VIDEO", this.videoWidth, this.videoHeight);
-       var canvas = createCanvas(windowId, "VIDEO", 400, 300,"video",true);
+       var canvas = createCanvas(windowId, "VIDEO", 400, 300,"video",true, true);
        var ctx = canvas.getContext('2d');
        ctx.drawImage(this, 0, 0, this.videoWidth, this.videoHeight);
-        
-       askTiledDisplay(windowId, "VIDEO",false);
+       var data = { "duration": video.duration, "currentTime": video.currentTime };
+       askTiledDisplay(windowId, "VIDEO",false, data);
     });
 }
 
@@ -36,7 +36,7 @@ function loadVideoNormalDisplay(windowId, url) {
         //var canvas = createCanvas(windowId, "VIDEO", this.videoWidth, this.videoHeight);
         //var ctx = canvas.getContext('2d');
         //ctx.drawImage(this, 0, 0, this.videoWidth, this.videoHeight);
-        var canvas = createCanvas(windowId, "VIDEO", 400, 300, "video", true);
+        var canvas = createCanvas(windowId, "VIDEO", 400, 300, "video", true, true);
 
         var ctx = canvas.getContext('2d');
         ctx.drawImage(this, 0, 0, canvas.width, canvas.height);
@@ -54,7 +54,7 @@ function loadInputFile(div) {
 function loadPdf(windowId, url) {
 
     //PDFJS.disableWorker = true;
-    var canvasToDraw = createCanvas(windowId, "PDF", 400, 300, "pdf", true);
+    var canvasToDraw = createCanvas(windowId, "PDF", 400, 300, "pdf", true, true);
     var drawContext = canvasToDraw.getContext('2d');
     
     PDFJS.getDocument('/static/helloworld.pdf').then(function (pdf) {
@@ -86,7 +86,7 @@ function loadPdf(windowId, url) {
 }
 
 function loadSharedWindow(windowId) {
-    var canvasToDraw = createCanvas(windowId, "SHARED MAIN", 400, 300, "shared", true);
-    shareWindow(windowId);
+    var canvasToDraw = createCanvas(windowId, "SHARED MAIN", 400, 300, "shared", true, true);
+    shareWindow(windowId, "SHARED TEST", "shared");
     
 }
