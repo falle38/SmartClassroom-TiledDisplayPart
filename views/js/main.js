@@ -555,25 +555,26 @@ function initializeEventListener() {
     });
     
     $(".display").on("touchstart mousedown", "label.icon-close", function (e) {
+        e.preventDefault();
         e.currentTarget.parentElement.parentElement.parentElement.removeChild(e.currentTarget.parentElement.parentElement);
     });
     
     $(".display").on("touchstart mousedown", "label.icon-fullscreen", function (e) {
+        e.preventDefault();
         var windowId = e.currentTarget.parentElement.parentElement.id.split('window')[1];
         var canvas = document.getElementById("canvas" + windowId);
         fullWindow(canvas);
     });
     
     $(".display").on("touchstart mousedown", "label.icon-tiled", function (e) {
+        e.preventDefault();
         var windowId = e.currentTarget.parentElement.parentElement.id.split('window')[1];
         askSwitchToTiledDisplay(windowId);
     });
     
-    
-    $(".display").on("touchstart",function (e) {
+    $(".display").on("touchmove", function (e) {
         e.preventDefault();
-    });
-    
+    });   
     
     // action lorsque le label est cliqué
     $(".input-file-trigger").on("mousedown", function (e) {
