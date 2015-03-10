@@ -126,28 +126,35 @@ everyone.now.getWindowId = function (type, url) {
 // called from client - just execute one client context (host)
 everyone.now.askRemoteMediaControl = function (windowId, mediaType, controlType, value, isForEveryone) {
     if (isForEveryone) {
-        everyone.now.remoteMediaControl(windowId, mediaType, controlType, value);
+        everyone.now.filterRemoteMediaControl(windowId, mediaType, controlType, value, this.now.id);
     }
     else {
         clientList[hosts[windowId].client].object.now.remoteMediaControl(windowId, mediaType, controlType, value);
     }
 };
 
-
+// called from server - execute every client context, then we can do filtering
+everyone.now.filterRemoteMediaControl = function (windowId, mediaType, controlType, value, clientId) {
+    // by right, it will execute in every client context include host page, we need to filter out the host by delete its name
+    if (this.now.id == clientId) {return;}
+    // ok, now we call the client side update image method, to update the screen into HTML5 canvas
+    this.now.remoteMediaControl(windowId, mediaType, controlType, value);
+};
 
 
 // called from client - just execute one client context (host)
-everyone.now.askTiledDisplay = function (windowId, title, isPlayingAudio, data) {
+everyone.now.askTiledDisplay = function (windowId, type, title, isPlayingAudio, data) {
     var client = this;
     var shareMedia = nowjs.getGroup("shareMedia" + windowId);
    // shareMedia.addUser(this.user.clientId);
     countCallback = function (nb) {
         var host = { "client": client.now.id,"group": shareMedia ,"nbCurrent": 0, "nbExpected": nb, "isPlayingAudio": isPlayingAudio , "nbReadyAudio": 0, "nbReadyAudioExpected": nb }
         hosts[windowId] = host;
-        everyone.now.filterAskTiledDisplay(windowId, title, data);
+        everyone.now.filterAskTiledDisplay(windowId, type, title, data);
     };
     everyone.count(countCallback);
-    this.now.ReadyToReceiveVideo(windowId);
+   
+    this.now.ReadyToReceiveVideo(windowId, type);
     //var host = { "client": this.now.id, "nbCurrent": 0, "nbExpected": 1,"isPlayingAudio":isPlayingAudio ,"nbReadyAudio": 0, "nbReadyAudioExpected": 2 }
     //hosts[windowId] = host;
     //everyone.now.filterAskTiledDisplay(windowId, title, data);
@@ -157,11 +164,11 @@ everyone.now.askTiledDisplay = function (windowId, title, isPlayingAudio, data) 
 
 
 // called from server - execute every client context, then we can do filtering
-everyone.now.filterAskTiledDisplay = function (windowId, title, data) {
+everyone.now.filterAskTiledDisplay = function (windowId, type, title, data) {
     // by right, it will execute in every client context include host page, we need to filter out the host by delete its name
     if (this.now.id == hosts[windowId].client){ return; console.log("HOST NOT READY");}
     // ok, now we call the client side update image method, to update the screen into HTML5 canvas
-    this.now.launchTiledDisplay(windowId, title, data);
+    this.now.launchTiledDisplay(windowId, type, title, data);
 };
 
 // called from client - just execute one client context (host)
@@ -179,12 +186,15 @@ everyone.now.filterShareData = function (windowId, data, hostId) {
 };
 
 
-everyone.now.ReadyToReceiveVideo = function (windowId) {
+everyone.now.ReadyToReceiveVideo = function (windowId, type) {
     hosts[windowId].nbCurrent++;
     hosts[windowId].group.addUser(this.user.clientId)
     console.log(hosts[windowId].nbCurrent);
-    if(hosts[windowId].nbCurrent == hosts[windowId].nbExpected){
-        clientList[hosts[windowId].client].object.now.broadcastVideo(windowId, hosts[windowId].isPlayingAudio);
+
+    if (hosts[windowId].nbCurrent == hosts[windowId].nbExpected) {
+        if (type == "video") {
+            clientList[hosts[windowId].client].object.now.broadcastVideo(windowId, hosts[windowId].isPlayingAudio);
+        }
     }  
 };
 

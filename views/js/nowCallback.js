@@ -3,8 +3,8 @@ $(function () {
         callbackConnected(infos);
     };
 
-    askTiledDisplay = function (windowId, title, isPlayingAudio, data) {
-        now.askTiledDisplay(windowId, title, isPlayingAudio, data);
+    askTiledDisplay = function (windowId, type, title, isPlayingAudio, data) {
+        now.askTiledDisplay(windowId, type, title, isPlayingAudio, data);
     };
     now.updateData = function (windowId, data) {
         updateData(windowId, data);
@@ -24,8 +24,8 @@ $(function () {
 
     // called from server - to update the image data just for this client page
     // the data is a base64-encoded image
-    now.launchTiledDisplay = function (windowId, title, data) {
-        launchTiledDisplay(windowId, title, data);
+    now.launchTiledDisplay = function (windowId, type, title, data) {
+        launchTiledDisplay(windowId, type, title, data);
     };
     
     now.updateWindowPosition = function (windowId, orientation, top, left) {
@@ -40,8 +40,8 @@ $(function () {
         broadcastVideo(windowId, isPlayingAudio);
     };
 
-    ReadyToReceiveVideo = function (windowId) {
-        now.ReadyToReceiveVideo(windowId);
+    ReadyToReceiveVideo = function (windowId, type) {
+        now.ReadyToReceiveVideo(windowId, type);
     };
     
     now.switchToTiledDisplay = function (windowId){

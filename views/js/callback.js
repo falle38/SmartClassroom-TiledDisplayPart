@@ -102,6 +102,79 @@ $(document).ready(function () {
                 canvas.dispatchEvent(eventEndFullscreen);
             }
         }
+        else if (mediaType == "pdf") {
+            if (controlType == "seekbar") {
+                var seekBar = document.getElementById('video-slider' + windowId)
+                seekBar.value = value;
+                var eventInput = new Event('input');
+                seekBar.dispatchEvent(eventInput);
+            }
+            else if (controlType == "seekbar-event") {
+                var seekBar = document.getElementById('video-slider' + windowId)
+                seekBar.value = value;
+                if (seekBar.classList.contains('fill')) {
+                    styles[windowId] = getFillStyle(seekBar);
+                }
+                else {
+                    styles[windowId] = '';
+                }
+                if (seekBar.classList.contains('tip')) {
+                    styles[windowId] += getTipStyle(seekBar);
+                }
+                s.textContent = styles.join('');
+                windowList["canvas" + windowId].data.currentPosition = value;
+            }
+            else if (controlType == "previous") {
+                if (value == "event") {
+                    var seekBar = document.getElementById('video-slider' + windowId)
+                    seekBar.value--;
+                    if (seekBar.classList.contains('fill')) {
+                        styles[windowId] = getFillStyle(seekBar);
+                    }
+                    else {
+                        styles[windowId] = '';
+                    }
+                    if (seekBar.classList.contains('tip')) {
+                        styles[windowId] += getTipStyle(seekBar);
+                    }
+                    s.textContent = styles.join('');
+                    windowList["canvas" + windowId].data.currentPosition--;
+                }
+                else {
+                    var previous = document.getElementById('previous-pdf' + windowId)
+                    var eventPrevious = new Event('previous');
+                    previous.dispatchEvent(eventPrevious);
+                }
+
+            }
+            else if (controlType == "next") {
+                if (value == "event") {
+                    var seekBar = document.getElementById('video-slider' + windowId)
+                    seekBar.value++;
+                    if (seekBar.classList.contains('fill')) {
+                        styles[windowId] = getFillStyle(seekBar);
+                    }
+                    else {
+                        styles[windowId] = '';
+                    }
+                    if (seekBar.classList.contains('tip')) {
+                        styles[windowId] += getTipStyle(seekBar);
+                    }
+                    s.textContent = styles.join('');
+                    windowList["canvas" + windowId].data.currentPosition++;
+                }
+                else {
+                    var next = document.getElementById('next-pdf' + windowId)
+                    var eventNext = new Event('next');
+                    next.dispatchEvent(eventNext);
+                }
+            }
+            else if (controlType == "endfullscreen") {
+                var canvas = document.getElementById('canvas' + windowId);
+                windowList[canvas.id].isTiled = false;
+                canvas.dispatchEvent(eventEndFullscreen);
+            }
+        }
     }
     
     
@@ -212,11 +285,11 @@ $(document).ready(function () {
         }
     }
 
-    launchTiledDisplay = function (windowId, title, data) {
+    launchTiledDisplay = function (windowId, type, title, data) {
         console.log("LAUNCHING");
-        createCanvas(windowId,title, 400, 300, "video",false, true, data);
+        createCanvas(windowId,title, 400, 300, type, false, true, data);
         // initializeAudioplayer(now.id, windowId);
-        ReadyToReceiveVideo(windowId);
+        ReadyToReceiveVideo(windowId, type);
     };
     
     switchToTiledDisplay = function (windowId){
@@ -239,8 +312,6 @@ $(document).ready(function () {
     // called from server - to update the image data just for this client page
     // the data is a base64-encoded image
     updateCanvas = function (windowId, image) {
-
-
         var window = getWindow(windowId);
         var canvasToDraw = document.getElementById("canvas" + windowId);
         var draw = canvasToDraw.getContext('2d');

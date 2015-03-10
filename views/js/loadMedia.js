@@ -15,7 +15,7 @@ function loadVideoTiledDisplay(windowId, url) {
        var canvas = createCanvas(windowId, "VIDEO", 400, 300,"video",true, true, data);
        var ctx = canvas.getContext('2d');
        ctx.drawImage(this, 0, 0, this.videoWidth, this.videoHeight);
-       askTiledDisplay(windowId, "VIDEO",false, data);
+       askTiledDisplay(windowId, "video", "VIDEO",false, data);
     });
 }
 
@@ -51,12 +51,15 @@ function loadInputFile(div) {
 }
 
 function loadPdf(windowId, url) {
-
-    //PDFJS.disableWorker = true;
-    var canvasToDraw = createCanvas(windowId, "PDF", 400, 300, "pdf", true, true);
-    var drawContext = canvasToDraw.getContext('2d');
-    
     PDFJS.getDocument('/static/helloworld.pdf').then(function (pdf) {
+        //PDFJS.disableWorker = true;
+        var data = { "pdf": pdf, "currentPosition": 1, "total": pdf.numPages};
+        var canvasToDraw = createCanvas(windowId, "PDF", 400, 300, "pdf", true, true, data);
+        //We send data to clients without the pdf object
+        data = { "currentPosition": 1, "total": pdf.numPages };
+        askTiledDisplay(windowId, "pdf", "VIDEO", false, data);
+
+        var drawContext = canvasToDraw.getContext('2d');
         // Using promise to fetch the page
         pdf.getPage(1).then(function (page) {
             var scale = 1.5;

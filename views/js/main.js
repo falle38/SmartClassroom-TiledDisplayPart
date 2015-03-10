@@ -156,8 +156,8 @@ function createVideoControls(windowId, isFullscreen, isMaster) {
         var ID = windowId;
     }
     var toolbar = document.createElement('div');
-    toolbar.className = 'video-controls transparent';
-    toolbar.id = "video-controls" + ID;
+    toolbar.className = 'media-controls transparent';
+    toolbar.id = "media-controls" + ID;
     toolbar.style.display = "none";
 
     var canvas = document.getElementById("canvas" + windowId);
@@ -281,6 +281,166 @@ function createVideoControls(windowId, isFullscreen, isMaster) {
     return toolbar;
 }
 
+function loadPdfPage(windowId, index){
+    var canvas = document.getElementById("canvas" + windowId);
+    var data = windowList[canvas.id].data;
+    data.pdf.getPage(index).then(function (page) {
+        var scale = 1.5;
+        var viewport = page.getViewport(scale);
+        
+        //
+        // Prepare canvas using PDF page dimensions
+        //
+        var backing_canvas = document.getElementById("backing_" + canvas.id);
+        backing_canvas.height = viewport.height;
+        backing_canvas.width = viewport.width;
+        var backing_context = backing_canvas.getContext('2d');
+        
+        //
+        // Render PDF page into canvas context
+        //
+        var renderContext = {
+            canvasContext: backing_context,
+            viewport: viewport
+        };
+        page.render(renderContext).promise.then(function () {
+            var context = canvas.getContext('2d');
+            context.drawImage(backing_canvas, 0, 0, canvas.width, canvas.height);
+            shareImage(windowId, canvas.toDataURL("image/jpeg"));
+        });;
+    });
+    data.currentPosition = index;
+}
+
+
+
+function createPdfControls(windowId, isFullscreen, isMaster) {
+    if (isFullscreen) {
+        var ID = "-fullscreen";
+    }
+    else {
+        var ID = windowId;
+    }
+    var toolbar = document.createElement('div');
+    toolbar.className = 'media-controls transparent';
+    toolbar.id = "media-controls" + ID;
+    toolbar.style.display = "none";
+    
+    var canvas = document.getElementById("canvas" + windowId);
+    var data = windowList[canvas.id].data;
+    
+    var previous = document.createElement('div');
+    previous.className = 'previous-pdf';
+    previous.id = 'previous-pdf' + ID;
+    previous.innerHTML = "PREVIOUS";
+    
+    var next = document.createElement('div');
+    next.className = 'next-pdf';
+    next.id = 'next-pdf' + ID;
+    next.innerHTML ="NEXT";
+    
+    var seekBar = document.createElement('input');
+    seekBar.type = "range";
+    seekBar.className = ' video-slider fill fill--1';
+    seekBar.id = 'video-slider' + ID;
+    seekBar.value = '0';
+    seekBar.step = "1";
+    seekBar.max = data.total - 1;
+    styles.push('');
+        
+    seekBar.addEventListener('input', function () {
+        if (isMaster) {
+            console.log(this.value);
+            loadPdfPage(windowId, parseInt(this.value) + 1);
+            askRemoteMediaControl(windowId, "pdf", "seekbar-event", this.value, true);
+        }
+        else {
+            askRemoteMediaControl(windowId, "pdf", "seekbar", this.value, false);
+        }
+        if (this.classList.contains('fill')) {
+            styles[ID] = getFillStyle(this);
+        }
+        else {
+            styles[ID] = '';
+        }
+        s.textContent = styles.join('');
+    }, false);
+    
+    
+    previous.addEventListener('previous', function () {
+        if (data.currentPosition > 1) {
+            loadPdfPage(windowId, data.currentPosition - 1);
+            seekBar.value--;
+        }
+    });
+    previous.addEventListener('mousedown', function () {
+        if (isMaster) {
+            if (data.currentPosition > 1) {
+                askRemoteMediaControl(windowId, "pdf", "previous", "event", true);
+                loadPdfPage(windowId, data.currentPosition - 1);
+                seekBar.value--;
+            }
+        }
+        else {
+            if (data.currentPosition > 1) {
+                askRemoteMediaControl(windowId, "pdf", "previous", "", false);
+                data.currentPosition--;
+                seekBar.value--;
+            }
+        }
+        if (seekBar.classList.contains('fill')) {
+            styles[ID] = getFillStyle(seekBar);
+        }
+        else {
+            styles[ID] = '';
+        }
+        if (seekBar.classList.contains('tip')) {
+            styles[ID] += getTipStyle(seekBar);
+        }
+        s.textContent = styles.join('');
+    }, false);
+    
+    next.addEventListener('next', function () {
+        if (data.currentPosition < data.total) {
+            loadPdfPage(windowId, data.currentPosition + 1);
+            seekBar.value++;
+        }
+    });
+    next.addEventListener('mousedown', function () {
+        if (isMaster) {
+            if (data.currentPosition < data.total) {
+                askRemoteMediaControl(windowId, "pdf", "next", "event", true);
+                loadPdfPage(windowId, data.currentPosition + 1);
+                seekBar.value++;
+            }
+        }
+        else {
+            if (data.currentPosition < data.total) {
+                askRemoteMediaControl(windowId, "pdf", "next", "", false);
+                data.currentPosition++;
+                seekBar.value++;
+            }
+        }
+        if (seekBar.classList.contains('fill')) {
+            styles[ID] = getFillStyle(seekBar);
+        }
+        else {
+            styles[ID] = '';
+        }
+        if (seekBar.classList.contains('tip')) {
+            styles[ID] += getTipStyle(seekBar);
+        }
+        s.textContent = styles.join('');
+    }, false);
+
+    toolbar.appendChild(seekBar);
+    toolbar.appendChild(previous);
+    toolbar.appendChild(next);
+    //toolbar.appendChild(duration);
+    return toolbar;
+}
+
+
 function createCanvas(windowId, title, width, height, type, isMaster, isShared, data) {
     var canvasToDraw = document.createElement('canvas');
     canvasToDraw.id = 'canvas' + windowId;
@@ -322,6 +482,33 @@ function createCanvas(windowId, title, width, height, type, isMaster, isShared, 
             }
             timeoutIdentifier = setTimeout(function () {
                 $("#" + videoControls.id).slideUp(200);
+            }, 2500);
+        });
+    
+    }
+    else if (type == "pdf") {
+        var pdfControls = createPdfControls(windowId, false, isMaster);
+        windowDiv.appendChild(pdfControls);
+        
+        var timeoutIdentifier;
+        
+        $("#" + pdfControls.id).mousemove(function (e) {
+            if (timeoutIdentifier) {
+                clearTimeout(timeoutIdentifier);
+            }
+            timeoutIdentifier = setTimeout(function () {
+                $("#" + pdfControls.id).slideUp(200);
+            }, 2500);
+        });
+        
+        $("#" + canvasToDraw.id).mousemove(function (e) {
+            $("#" + pdfControls.id).slideDown(200);
+            
+            if (timeoutIdentifier) {
+                clearTimeout(timeoutIdentifier);
+            }
+            timeoutIdentifier = setTimeout(function () {
+                $("#" + pdfControls.id).slideUp(200);
             }, 2500);
         });
     
@@ -476,6 +663,8 @@ function fullWindow(canvas) {
         }
         var askEndFullscreen = function (e) {
             askRemoteMediaControl(windowId, "video", "endfullscreen", "", true);
+            endFullscreen();
+
         }
         
         canvas.addEventListener('draw', listener, false);
