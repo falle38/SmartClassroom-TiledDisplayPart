@@ -100,7 +100,6 @@ $(document).ready(function () {
                 var canvas = document.getElementById('canvas' + windowId);
                 windowList[canvas.id].isTiled = false;
                 canvas.dispatchEvent(eventEndFullscreen);
-
             }
         }
     }

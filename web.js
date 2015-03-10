@@ -137,13 +137,24 @@ everyone.now.askRemoteMediaControl = function (windowId, mediaType, controlType,
 
 
 // called from client - just execute one client context (host)
-everyone.now.askTiledDisplay = function (windowId,title,isPlayingAudio, data) {
-    var host = { "client": this.now.id, "nbCurrent": 0, "nbExpected": 1,"isPlayingAudio":isPlayingAudio ,"nbReadyAudio": 0, "nbReadyAudioExpected": 2 }
-	
-    hosts[windowId] = host;
-	
-    everyone.now.filterAskTiledDisplay(windowId, title, data);
+everyone.now.askTiledDisplay = function (windowId, title, isPlayingAudio, data) {
+    var client = this;
+    var shareMedia = nowjs.getGroup("shareMedia" + windowId);
+   // shareMedia.addUser(this.user.clientId);
+    countCallback = function (nb) {
+        var host = { "client": client.now.id,"group": shareMedia ,"nbCurrent": 0, "nbExpected": nb, "isPlayingAudio": isPlayingAudio , "nbReadyAudio": 0, "nbReadyAudioExpected": nb }
+        hosts[windowId] = host;
+        everyone.now.filterAskTiledDisplay(windowId, title, data);
+    };
+    everyone.count(countCallback);
+    this.now.ReadyToReceiveVideo(windowId);
+    //var host = { "client": this.now.id, "nbCurrent": 0, "nbExpected": 1,"isPlayingAudio":isPlayingAudio ,"nbReadyAudio": 0, "nbReadyAudioExpected": 2 }
+    //hosts[windowId] = host;
+    //everyone.now.filterAskTiledDisplay(windowId, title, data);
 };
+
+
+
 
 // called from server - execute every client context, then we can do filtering
 everyone.now.filterAskTiledDisplay = function (windowId, title, data) {
@@ -156,7 +167,7 @@ everyone.now.filterAskTiledDisplay = function (windowId, title, data) {
 // called from client - just execute one client context (host)
 everyone.now.shareData = function (windowId, data) {
     // update the data to the other clients other than host
-    everyone.now.filterShareData(windowId, data, this.now.id);
+    hosts[windowId].group.now.filterShareData(windowId, data, this.now.id);
 };
 
 // called from client - just execute one client context (host)
@@ -170,6 +181,7 @@ everyone.now.filterShareData = function (windowId, data, hostId) {
 
 everyone.now.ReadyToReceiveVideo = function (windowId) {
     hosts[windowId].nbCurrent++;
+    hosts[windowId].group.addUser(this.user.clientId)
     console.log(hosts[windowId].nbCurrent);
     if(hosts[windowId].nbCurrent == hosts[windowId].nbExpected){
         clientList[hosts[windowId].client].object.now.broadcastVideo(windowId, hosts[windowId].isPlayingAudio);
@@ -189,19 +201,19 @@ everyone.now.ReadyToPlayAudio = function (windowId) {
 // called from client - just execute one client context (host)
 everyone.now.shareImage = function (windowId, image) {
     // update the data to the other clients other than host
-    everyone.now.updateCanvas(windowId, image);
+    hosts[windowId].group.now.updateCanvas(windowId, image);
 };
 
 // called from client - just execute one client context (host)
 everyone.now.askSwitchToTiledDisplay = function (windowId) {
     // update the data to the other clients other than host
-    everyone.now.switchToTiledDisplay(windowId);
+    hosts[windowId].group.now.switchToTiledDisplay(windowId);
 };
 
 // called from client - just execute one client context (host)
 everyone.now.askSwitchToNormalDisplay = function (windowId) {
     // update the data to the other clients other than host
-    everyone.now.switchToNormalDisplay(windowId);
+    hosts[windowId].group.now.switchToNormalDisplay(windowId);
 };
 
 sendAudioDataToStreamList = function (data) {
