@@ -554,36 +554,23 @@ function initializeEventListener() {
         askServerLoadSharedWindow();
     });
     
-    $(".display").on("mousedown", "label.icon-close", function (e) {
-        e.currentTarget.parentElement.parentElement.parentElement.removeChild(e.currentTarget.parentElement.parentElement);
-    });
-
-    $(".display").on("touchstart", "label.icon-close", function (e) {
+    $(".display").on("touchstart mousedown", "label.icon-close", function (e) {
         e.currentTarget.parentElement.parentElement.parentElement.removeChild(e.currentTarget.parentElement.parentElement);
     });
     
-    $(".display").on("mousedown", "label.icon-fullscreen", function (e) {
+    $(".display").on("touchstart mousedown", "label.icon-fullscreen", function (e) {
         var windowId = e.currentTarget.parentElement.parentElement.id.split('window')[1];
         var canvas = document.getElementById("canvas" + windowId);
         fullWindow(canvas);
     });
     
-    $(".display").on("touchstart", "label.icon-fullscreen", function (e) {
-        var windowId = e.currentTarget.parentElement.parentElement.id.split('window')[1];
-        var canvas = document.getElementById("canvas" + windowId);
-        fullWindow(canvas);
-    });
-    
-    $(".display").on("mousedown", "label.icon-tiled", function (e) {
+    $(".display").on("touchstart mousedown", "label.icon-tiled", function (e) {
         var windowId = e.currentTarget.parentElement.parentElement.id.split('window')[1];
         askSwitchToTiledDisplay(windowId);
     });
     
-    $(".display").on("touchstart", "label.icon-tiled", function (e) {
-        var windowId = e.currentTarget.parentElement.parentElement.id.split('window')[1];
-        askSwitchToTiledDisplay(windowId);
-    });
-    $(".display").mousedown(function (e) {
+    
+    $(".display").on("touchstart",function (e) {
         e.preventDefault();
     });
     
