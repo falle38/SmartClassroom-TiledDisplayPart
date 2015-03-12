@@ -22,7 +22,6 @@ app.use("/css", express.static(__dirname + "/views/css"));
 app.use("/fonts", express.static(__dirname + "/views/fonts"));
 app.use("/flowplayer", express.static(__dirname + "/views/flowplayer"));
 
-
 var clientAudioStreamList = [];
 
 // handle main page, the client page

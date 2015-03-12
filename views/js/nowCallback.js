@@ -113,13 +113,16 @@ function askServerLoadVideoNormalDisplay(url) {
     now.getWindowId("video-normal", url);
 }
 
-
 function askServerLoadPdf(url) {
     now.getWindowId("pdf", url);
 }
 
 function askServerLoadSharedWindow() {
     now.getWindowId("shared");
+}
+
+function askServerLoadPingPong() {
+    now.getWindowId("ping-pong");
 }
 
 now.launchWindow = function (windowId, type, url) {

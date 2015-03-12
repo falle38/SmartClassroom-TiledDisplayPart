@@ -59,6 +59,9 @@ $(document).ready(function () {
         else if (type == "shared") {
             loadSharedWindow(windowId);
         }
+        else if (type == "ping-pong") {
+            launchPingPongGame(windowId);
+        }
     };
     
     remoteMediaControl = function (windowId, mediaType, controlType, value) {
