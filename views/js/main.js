@@ -788,7 +788,14 @@ function initializeEventListener() {
         e.preventDefault();
         var windowId = e.currentTarget.parentElement.parentElement.id.split('window')[1];
         var canvas = document.getElementById("canvas" + windowId);
-        fullWindow(canvas);
+        if (windowList[canvas.id].type == "game") {
+            windowList[canvas.id].data.game.launchFullScreen();
+            windowList[canvas.id].isTiled = true;
+            askRemoteGameControl(windowId, "ping-pong", "fullscreen", "", true);
+        }
+        else {
+            fullWindow(canvas);
+        }
     });
     
     $(".display").on("touchstart mousedown", "label.icon-tiled", function (e) {

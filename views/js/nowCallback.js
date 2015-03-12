@@ -128,3 +128,20 @@ function askServerLoadPingPong() {
 now.launchWindow = function (windowId, type, url) {
     launchWindow(windowId, type, url);
 };
+
+
+
+
+
+
+
+
+
+
+now.remoteGameControl = function (windowId, game, controlType, value) {
+    remoteGameControl(windowId, game, controlType, value);
+}
+
+askRemoteGameControl = function (windowId, game, controlType, value, isForEveryone) {
+    now.askRemoteGameControl(windowId, game, controlType, value, isForEveryone);
+}

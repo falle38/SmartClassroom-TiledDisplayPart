@@ -291,3 +291,22 @@ everyone.now.streamAudioToClient = function(videoPath){
        sendAudioDataToStreamList(chunk);
    });
 }
+
+
+// called from client - just execute one client context (host)
+everyone.now.askRemoteGameControl = function (windowId, game, controlType, value, isForEveryone) {
+    if (isForEveryone) {
+        everyone.now.filterRemoteGameControl(windowId, game, controlType, value, this.now.id);
+    }
+    else {
+        clientList[hosts[windowId].client].object.now.remoteGameControl(windowId, game, controlType, value);
+    }
+};
+
+// called from server - execute every client context, then we can do filtering
+everyone.now.filterRemoteGameControl = function (windowId, game, controlType, value, clientId) {
+    // by right, it will execute in every client context include host page, we need to filter out the host by delete its name
+    if (this.now.id == clientId) { return; }
+    // ok, now we call the client side update image method, to update the screen into HTML5 canvas
+    this.now.remoteGameControl(windowId, game, controlType, value);
+};

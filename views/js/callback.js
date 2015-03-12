@@ -60,7 +60,7 @@ $(document).ready(function () {
             loadSharedWindow(windowId);
         }
         else if (type == "ping-pong") {
-            launchPingPongGame(windowId);
+            launchPingPongGame(windowId, true);
         }
     };
     
@@ -290,7 +290,12 @@ $(document).ready(function () {
 
     launchTiledDisplay = function (windowId, type, title, data) {
         console.log("LAUNCHING");
-        createCanvas(windowId,title, 400, 300, type, false, true, data);
+        if (type == "ping-pong") {
+            launchPingPongGame(windowId, false);
+        }
+        else {
+            createCanvas(windowId, title, 400, 300, type, false, true, data);
+        }
         // initializeAudioplayer(now.id, windowId);
         ReadyToReceiveVideo(windowId, type);
     };
@@ -480,4 +485,26 @@ $(document).ready(function () {
         document.getElementById("audio").play();
         //audioplayer.toggle();
     };
+
+    remoteGameControl = function (windowId, game, controlType, value) {
+        if (game == "ping-pong") {
+            if (controlType == "moveBall") {
+                windowList["canvas" + windowId].data.game.ball.x = value.x;
+                windowList["canvas" + windowId].data.game.ball.y = value.y;
+            }
+            else if (controlType == "movePaddle") {
+                windowList["canvas" + windowId].data.game.movePaddle(value.id, value.x);
+            }
+            else if (controlType == "fullscreen") {
+                windowList["canvas" + windowId].data.game.launchFullScreen();
+                windowList["canvas" + windowId].isTiled = true;
+            }
+            else if (controlType == "endfullscreen") {
+                var eventEndFullscreen = new Event('endfullscreen');
+                var canvas = document.getElementById('canvas' + windowId);
+                canvas.dispatchEvent(eventEndFullscreen);
+                windowList["canvas" + windowId].isTiled = false;
+            }
+        }
+    }
 });
