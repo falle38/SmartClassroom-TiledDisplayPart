@@ -31,7 +31,8 @@ launchPingPongGame = function (windowId, isMaster) {
         over : 0, // flag varialbe, cahnged when the game is over
         init: {}, // variable to initialize animation
         paddleHit: {},
-        quitBtn: {x:0,y:0,h:0,w:0},
+        quitBtn: { x: 0, y: 0, h: 0, w: 0 },
+        areaSide : 0,
         
         
         
@@ -110,22 +111,15 @@ launchPingPongGame = function (windowId, isMaster) {
             
             // Move the paddles on mouse move
             if (this.mouse.x && this.mouse.y) {
-                if (isMaster) {
-                    //Move only his paddle
-                    this.movePaddle(1, this.mouse.x - p.w / 2);
-                    askRemoteGameControl(windowId, "ping-pong", "movePaddle", { "id": 1, "x": this.paddles[1].x }, true);
-                }
-                else {
-                    //Move only his paddle
-                    this.movePaddle(2, this.mouse.x - p.w / 2);
-                    askRemoteGameControl(windowId, "ping-pong", "movePaddle", { "id": 2, "x": this.paddles[2].x }, true);
-                }
+                //Move only his paddle
+                this.movePaddle(1, this.mouse.x - p.w / 2);
+                askRemoteGameControl(windowId, "ping-pong", "movePaddle", { "id": 2, "x": this.paddles[1].x, "W": this.W }, true);
             }
             
             if (isMaster) {
                 // Move the ball
                 this.moveBall();
-                askRemoteGameControl(windowId, "ping-pong", "moveBall", this.ball, true);
+                askRemoteGameControl(windowId, "ping-pong", "moveBall", { "x": this.ball.x, "y": this.ball.y, "W": this.W, "H": this.H }, true);
             }
             
             // Collision with paddles
@@ -267,7 +261,12 @@ launchPingPongGame = function (windowId, isMaster) {
             ctx.font = "16px Arial, sans-serif";
             ctx.textAlign = "left";
             ctx.textBaseline = "top";
-            ctx.fillText("Score: " + this.points, 20, 20);
+            if (this.areaSide == 2) {
+                ctx.fillText("Score: " + this.points, 20 , 20 + this.H / 2 + 10);
+            }
+            else {
+                ctx.fillText("Score: " + this.points, 20, 20);
+            }
         },
         
         // Function to run when the game overs
@@ -277,8 +276,12 @@ launchPingPongGame = function (windowId, isMaster) {
             ctx.font = "20px Arial, sans-serif";
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
-            ctx.fillText("Game Over - You scored " + this.points + " points!", this.W / 2, (this.H / 2) + 25);
-            
+            if (this.areaSide == 2) {
+                ctx.fillText("Game Over - You scored " + this.points + " points!", this.W / 2, (this.H / 2) + 80 + 25);
+            }
+            else {
+                ctx.fillText("Game Over - You scored " + this.points + " points!", this.W / 2, (this.H / 2) + 25);
+            }
             // Stop the Animation
             cancelRequestAnimFrame(this.init);
             
@@ -296,10 +299,24 @@ launchPingPongGame = function (windowId, isMaster) {
             this.draw(canvas);
             this.startBtn.draw(canvas);
         },
-    launchFullScreen: function (){
+        launchFullScreen: function () {
             fullWindowPingPong();
-    }
-
+        },
+        
+        start : function () {
+            animloop(this.canvas);
+            // Delete the start button after clicking it
+            this.startBtn = {};
+        },
+        restart : function () {
+            this.ball.x = 20;
+            this.ball.y = 20;
+            this.points = 0;
+            this.ball.vx = 1;
+            this.ball.vy = 2;
+            this.over = 0;
+            animloop(this.canvas);
+        }
     }
     
     window.requestAnimFrame = (function () {
@@ -322,7 +339,7 @@ launchPingPongGame = function (windowId, isMaster) {
 		clearTimeout
     })();
     
-
+    
     
     
     // Function for running the whole animation
@@ -331,7 +348,7 @@ launchPingPongGame = function (windowId, isMaster) {
         game.draw(game.canvas);
     }
     
-
+    
     startPingPong = function () {
         // Function for creating paddles
         Paddle = function (pos) {
@@ -355,8 +372,8 @@ launchPingPongGame = function (windowId, isMaster) {
             y: 50, 
             r: 5,
             c: "white",
-            vx: 4,
-            vy: 8,
+            vx: 1,
+            vy: 2,
             
             // Function for drawing ball on canvas
             draw: function (canvas) {
@@ -374,19 +391,29 @@ launchPingPongGame = function (windowId, isMaster) {
             w: 100,
             h: 50,
             x: game.W / 2 - 50,
-            y: game.H / 2 - 25,
+            y: (game.H) / 2 - 25,
             
             draw: function (canvas) {
                 var ctx = canvas.getContext("2d");
                 ctx.strokeStyle = "white";
                 ctx.lineWidth = "2";
-                ctx.strokeRect(this.x, this.y, this.w, this.h);
-                
+                if (game.areaSide == 2) {
+                    ctx.strokeRect(this.x, this.y + 40, this.w, this.h / 2);
+                }
+                else {
+                    ctx.strokeRect(this.x, this.y, this.w, this.h);
+                }
                 ctx.font = "18px Arial, sans-serif";
                 ctx.textAlign = "center";
                 ctx.textBaseline = "middle";
                 ctx.fillStlye = "white";
-                ctx.fillText("Start", game.W / 2, game.H / 2);
+                if (game.areaSide == 2) {
+                    
+                    ctx.fillText("Start", this.x + 50, this.y + 50);
+                }
+                else {
+                    ctx.fillText("Start", this.x + 50, this.y + 25);
+                }
             }
         };
         
@@ -401,13 +428,25 @@ launchPingPongGame = function (windowId, isMaster) {
                 var ctx = canvas.getContext("2d");
                 ctx.strokeStyle = "white";
                 ctx.lineWidth = "2";
-                ctx.strokeRect(this.x, this.y, this.w, this.h);
+                
+                if (game.areaSide == 2) {
+                    ctx.strokeRect(this.x, this.y + 65, this.w, this.h / 2);
+                }
+                else {
+                    ctx.strokeRect(this.x, this.y, this.w, this.h);
+                }
                 
                 ctx.font = "18px Arial, sans-serif";
                 ctx.textAlign = "center";
                 ctx.textBaseline = "middle";
                 ctx.fillStlye = "white";
-                ctx.fillText("Restart", game.W / 2, game.H / 2 - 25);
+                
+                if (game.areaSide == 2) {
+                    ctx.fillText("Restart", this.x + 50, this.y + 65 + 15);
+                }
+                else {
+                    ctx.fillText("Restart", this.x + 50, this.y + 25);
+                }
             }
         };
         // Show the start screen
@@ -430,20 +469,14 @@ launchPingPongGame = function (windowId, isMaster) {
             var y = e.changedTouches[0].clientY;
         }
         else {
-            var x =  e.offsetX;
+            var x = e.offsetX;
             var y = e.offsetY;
         }
         //var x = (game.W * e.offsetX) / e.currentTarget.width;
         //var y = (game.H * e.offsetY) / e.currentTarget.height;
-
-        if (windowList[canvas.id].isTiled) {
-            game.mouse.x = y;
-            game.mouse.y = x;
-        }
-        else {
-            game.mouse.x = x;
-            game.mouse.y = y;
-        }
+        
+        game.mouse.x = x;
+        game.mouse.y = y;
     };
     // On button click (Restart and start)
     btnClick = function (e) {
@@ -454,12 +487,19 @@ launchPingPongGame = function (windowId, isMaster) {
         var my = e.offsetY;
         
         if (windowList[canvas.id].isTiled) {
-            var startX = game.startBtn.y;
-            var startY = game.startBtn.x;
-            var startDeltaX = game.startBtn.h;
-            var startDeltaY = game.startBtn.w;
-            var restartX = game.restartBtn.y;
-            var restartY = game.restartBtn.x;
+            
+            var startX = game.startBtn.x;
+            var startY = game.startBtn.y - game.H / 2 + 50;
+            console.log("MX :" + mx)
+            console.log("MY :" + my)
+            console.log("STARTX :" + startX)
+            console.log("STARTY :" + startY)
+            var startDeltaX = game.startBtn.w;
+            var startDeltaY = game.startBtn.h;
+            console.log("DELX :" + startDeltaX)
+            console.log("DELY :" + startDeltaY)
+            var restartX = game.restartBtn.x;
+            var restartY = game.restartBtn.y - game.H / 2 + 50;
             var restartDeltaX = game.restartBtn.h;
             var restartDeltaY = game.restartBtn.w;
         }
@@ -476,27 +516,21 @@ launchPingPongGame = function (windowId, isMaster) {
         
         // Click start button
         if (mx >= startX && mx <= (startX + startDeltaX) && my >= startY && my <= (startY + startDeltaY)) {
-            animloop(game.canvas);
-            // Delete the start button after clicking it
-            game.startBtn = {};
+            askRemoteGameControl(windowId, "ping-pong", "start", "",true);
+            game.start();
+            
         }
         
         // If the game is over, and the restart button is clicked
         if (game.over == 1) {
             if (mx >= restartX && mx <= (restartX + restartDeltaX) && my >= restartY && my <= (restartY + restartDeltaY)) {
-                game.ball.x = 20;
-                game.ball.y = 20;
-                game.points = 0;
-                game.ball.vx = 4;
-                game.ball.vy = 8;
-                animloop(game.canvas);
+                askRemoteGameControl(windowId, "ping-pong", "restart","" ,true);
+                game.restart();
                 
-                game.over = 0;
             }
         }
         if (windowList[canvas.id].isTiled) {
-            if (mx >= game.quitBtn.x && mx <= (game.quitBtn.x + game.quitBtn.h) && my >= game.quitBtn.x && my <= (game.quitBtn.x + game.quitBtn.w)) {
-                
+            if (mx >= game.quitBtn.x && mx <= (game.quitBtn.x + game.quitBtn.w) && my >= game.quitBtn.y && my <= (game.quitBtn.y + game.quitBtn.h)) {
                 askRemoteGameControl(windowId, "ping-pong", "endfullscreen", "", true);
                 var eventEndFullscreen = new Event('endfullscreen');
                 canvas.dispatchEvent(eventEndFullscreen);
@@ -504,7 +538,7 @@ launchPingPongGame = function (windowId, isMaster) {
         }
     }
     
-
+    
     function fullWindowPingPong() {
         console.log("DEDANS");
         if (!fullWindowState) {
@@ -527,19 +561,17 @@ launchPingPongGame = function (windowId, isMaster) {
             canvasToDraw.style.display = "block";
             saveWidth = backing_canvas.width;
             saveHeight = backing_canvas.height;
-            backing_canvas.width = window.innerHeight;
-            backing_canvas.height = window.innerWidth;
+            backing_canvas.width = window.innerWidth;
+            backing_canvas.height = window.innerHeight;
             game.W = backing_canvas.width;
             game.H = backing_canvas.height;
             
             var draw = canvasToDraw.getContext('2d');
-            draw.translate(canvasToDraw.width, 0);
-            draw.rotate(90 * (Math.PI / 180));
+            //draw.translate(canvasToDraw.width, 0);
+            //draw.rotate(90 * (Math.PI / 180));
             //draw.fillStyle = "red";
             //draw.fillRect(0, backing_canvas.height - 100, 100, 100);
             
-            
-
             //game.quitBtn.x = 48.5;
             //game.quitBtn.y = backing_canvas.height - 27.5;
             game.quitBtn.x = 5;
@@ -548,22 +580,38 @@ launchPingPongGame = function (windowId, isMaster) {
             game.quitBtn.h = 50;
             draw.strokeStyle = "white";
             draw.lineWidth = "3";
-
+            
             draw.strokeRect(game.quitBtn.x, game.quitBtn.y, game.quitBtn.w, game.quitBtn.h);
             
             draw.font = "30px Arial, sans-serif";
             draw.textAlign = "center";
             draw.textBaseline = "middle";
             draw.fillStyle = "white";
-          
+            
             draw.fillText("Quit", 48.5, backing_canvas.height - 27.5);
             
+            var rows = 2;
+            var cols = 1;
+            var tileX = 0;
+            var tileY = 0;
+            var tileWidth = backing_canvas.width;
+            var tileHeight = backing_canvas.height;
             
+            if (windowList[canvas.id].isTiled) {
+                console.log("TILED");
+                game.areaSide = 2;
+                tileWidth = Math.round(backing_canvas.width / cols);
+                tileHeight = Math.round((backing_canvas.height) / rows);
+                var tileCenterX = tileWidth / 2;
+                var tileCenterY = tileHeight / 2;
+                
+                tileY = tileY + tileHeight;
 
+            }
             function updateFullscreenCanvas() {
                 if (!drawing) return;
                 // Finally draw the image data from the temp canvas.
-                draw.drawImage(backing_canvas, 0, 0, backing_canvas.width, backing_canvas.height - 100);
+                draw.drawImage(backing_canvas, tileX, tileY, tileWidth, tileHeight, 0, 0, backing_canvas.width, backing_canvas.height - 55);
                 
                 setTimeout(updateFullscreenCanvas, 1000 / 60);
             }
@@ -583,9 +631,12 @@ launchPingPongGame = function (windowId, isMaster) {
                 canvasToDraw.style.display = "none";
                 fullWindowState = false;
                 drawing = false;
-                //canvasToDraw.removeEventListener("mousemove", fullscreenControlListener, false);
-                //fullscreenButton.removeEventListener("mousedown", askEndFullscreen, false);
-                //canvas.removeEventListener("endfullscreen", endFullscreen, false);
+                windowList[canvas.id].isTiled = false;
+                canvasToDraw.removeEventListener("mousemove", trackPosition, false);
+                canvasToDraw.removeEventListener("touchmove", trackPosition, false);
+                canvasToDraw.removeEventListener("mousedown", btnClick, false);
+                canvas.removeEventListener("endfullscreen", endFullscreen, false);
+                game.areaSide = 0;
                 cancelPingPong();
                 startPingPong();
             }
@@ -594,9 +645,9 @@ launchPingPongGame = function (windowId, isMaster) {
                 endFullscreen();
             }
             
-            canvasToDraw.addEventListener("mousemove", trackPosition, true);
-            canvasToDraw.addEventListener("touchmove", trackPosition, true);
-            canvasToDraw.addEventListener("mousedown", btnClick, true);
+            canvasToDraw.addEventListener("mousemove", trackPosition, false);
+            canvasToDraw.addEventListener("touchmove", trackPosition, false);
+            canvasToDraw.addEventListener("mousedown", btnClick, false);
             canvas.addEventListener('endfullscreen', endFullscreen , false);
             //fullscreenButton.addEventListener('mousedown', askEndFullscreen , false);
             cancelPingPong();
@@ -604,16 +655,16 @@ launchPingPongGame = function (windowId, isMaster) {
         }
     }
     
-   
-
-
+    
+    
+    
     // Add mousemove and mousedown events to the canvas
     canvas.addEventListener("mousemove", trackPosition, true);
     canvas.addEventListener("touchmove", trackPosition, true);
     canvas.addEventListener("mousedown", btnClick, true);
     canvas.addEventListener("touchdown", btnClick, true);
     
-
+    
     windowList[canvas.id].data = { "game": game }
     var ctx = canvas.getContext("2d");
     //ctx.translate(canvas.width, 0);
@@ -624,7 +675,7 @@ launchPingPongGame = function (windowId, isMaster) {
         ctx.drawImage(backing_canvas, 0, 0, backing_canvas.width, backing_canvas.height);
         setTimeout(doRotate, 16);
     }
-   doRotate();
+    doRotate();
     
     //TEST FULLSCREEN
     //fullWindowPingPong();

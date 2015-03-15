@@ -1,249 +1,154 @@
 ﻿<!DOCTYPE html>
 <html lang="en" class="no-js">
-	<head>
-		<meta charset="UTF-8" />
-		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"> 
-		<meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-		<title>Multi-Level Push Menu - Demo 3</title>
-		<meta name="description" content="Multi-Level Push Menu: Off-screen navigation with multiple levels" />
-		<meta name="keywords" content="multi-level, menu, navigation, off-canvas, off-screen, mobile, levels, nested, transform" />
-		<meta name="author" content="Codrops" />
-		<link rel="shortcut icon" href="../favicon.ico">
-		<link rel="stylesheet" type="text/css" href="css/normalize.css" />
-		<link rel="stylesheet" type="text/css" href="css/demo.css" />
-		<link rel="stylesheet" type="text/css" href="css/icons.css" />
-        <link rel="stylesheet" type="text/css" href="css/window.css" />
-		<link rel="stylesheet" type="text/css" href="css/component.css" />
-        <link rel="stylesheet" type="text/css" href="css/toolbar.css" />
-		
-        <script src="/includes/jquery/jquery.js"></script>
-        <script src="includes/modernizr.custom.js"></script>
-        <script src="includes/classie.js"></script>
-        <script src="includes/mlpushmenu.js"></script>
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Level Push Menu - Demo 3</title>
+    <meta name="description" content="Multi-Level Push Menu: Off-screen navigation with multiple levels" />
+    <meta name="keywords" content="multi-level, menu, navigation, off-canvas, off-screen, mobile, levels, nested, transform" />
+    <meta name="author" content="Codrops" />
+    <link rel="shortcut icon" href="../favicon.ico">
+    <link rel="stylesheet" type="text/css" href="css/normalize.css" />
+    <link rel="stylesheet" type="text/css" href="css/demo.css" />
+    <link rel="stylesheet" type="text/css" href="css/icons.css" />
+    <link rel="stylesheet" type="text/css" href="css/window.css" />
+    <link rel="stylesheet" type="text/css" href="css/component.css" />
+    <link rel="stylesheet" type="text/css" href="css/toolbar.css" />
 
-        <!-- Load local lib and tests. -->
-        <script src="/includes/jquery.pep.js"></script>
-        <script src="/includes/flowplayer.min.js"></script>
-        <script src="/includes/pdf.js"></script>
+    <script src="/includes/jquery/jquery.js"></script>
+    <script src="includes/modernizr.custom.js"></script>
+    <script src="includes/classie.js"></script>
+    <script src="includes/mlpushmenu.js"></script>
+    <!-- Load local lib and tests. -->
+    <script src="/includes/jquery.pep.js"></script>
+    <script src="/includes/flowplayer.min.js"></script>
+    <script src="/includes/pdf.js"></script>
 
-        <!--<script type="text/javascript" src="C:\configTable.ini"></script>-->
-        <script src="/nowjs/now.js"></script>
-        <script src="/js/main.js"></script>
-        <script src="/js/callback.js"></script>
-        <script src="/js/nowCallback.js"></script>
-        <script src="/js/loadMedia.js"></script>
-        <script src="/js/controlBar.js"></script>
-        <script src="/js/apps/ping_pong.js"></script>
-	</head>
-	<body>
-        <label class="fullscreen-controls transparent" id="fullscreen-controls-id" style="display: none; z-index:1">
-            <label id="close-fullscreen">[ / ]</label>
-            <label id="fullscreen-close-window">X</label>
-        </label>
+    <!--<script type="text/javascript" src="C:\configTable.ini"></script>-->
+    <script src="/nowjs/now.js"></script>
+    <script src="/js/main.js"></script>
+    <script src="/js/callback.js"></script>
+    <script src="/js/nowCallback.js"></script>
+    <script src="/js/loadMedia.js"></script>
+    <script src="/js/controlBar.js"></script>
+    <script src="/js/apps/ping_pong.js"></script>
+</head>
+<body>
+    <label class="fullscreen-controls transparent" id="fullscreen-controls-id" style="display: none; z-index:1">
+        <label id="close-fullscreen">[ / ]</label>
+        <label id="fullscreen-close-window">X</label>
+    </label>
 
+    <div class="container">
+        <!-- Push Wrapper -->
+        <div class="mp-pusher" id="mp-pusher">
+            <!-- mp-menu -->
+            <nav id="mp-menu" class="mp-menu">
+                <div class="mp-level">
+                    <h2 class="icon icon-world">Start</h2>
+                    <ul>
+                        <li class="icon icon-arrow-left">
+                            <a class="icon icon-shop" href="#">Apps</a>
+                            <div class="mp-level">
+                                <h2 class="icon icon-shop">Apps</h2>
+                                <a class="mp-back" href="#">back</a>
+                                <ul>
+                                    <li><a class="icon icon-photo load-ping-pong">Ping Pong</a></li>
+                                </ul>
+                            </div>
+                        </li>
+                        <li class="icon icon-arrow-left">
+                            <a class="icon icon-photo" href="#">Pictures</a>
+                            <div class="mp-level">
+                                <h2 class="icon icon-news">Magazines</h2>
+                                <a class="mp-back" href="#">back</a>
+                                <ul>
+                                    <li class="icon icon-arrow-left">
+                                        <a class="icon icon-phone" href="#">Local File</a>
+                                        <div class="mp-level" id="choose">
+                                            <input class="input-file" type="file" id="input-video-normal-display">
+                                            <label for="input-video-normal-display" class="input-file-trigger" tabindex="0">Select a file...</label>
+                                            <p class="file-return"></p>
+                                            <div class="load-file load-normal-display">Load Video</div>
+                                        </div>
 
-		<div class="container">
-			<!-- Push Wrapper -->
-			<div class="mp-pusher" id="mp-pusher">
+                                    </li>
+                                    <li><a class="icon icon-phone" href="#">URL</a></li>
+                                </ul>
+                            </div>
+                        </li>
+                        <li class="icon icon-arrow-left">
+                            <a class="icon icon-display" href="#">Video</a>
+                            <div class="mp-level">
+                                <h2 class="icon icon-display">Video</h2>
+                                <a class="mp-back" href="#">back</a>
+                                <ul>
+                                    <li class="icon icon-arrow-left">
+                                        <a class="icon icon-phone" href="#">Local File</a>
+                                        <div class="mp-level" id="choose">
+                                            <input class="input-file" type="file" id="input-video-tiled-display">
+                                            <label for="input-video-tiled-display" class="input-file-trigger" tabindex="0">Select a file...</label>
+                                            <p class="file-return"></p>
+                                            <div class="load-file load-tiled-display">Load Video</div>
+                                        </div>
 
-				<!-- mp-menu -->
-				<nav id="mp-menu" class="mp-menu">
-					<div class="mp-level">
-						<h2 class="icon icon-world">Start</h2>
-						<ul>
-                            <li class="icon icon-arrow-left">
-                                <a class="icon icon-display" href="#">Video</a>
-                                <div class="mp-level">
-                                    <h2 class="icon icon-display">Video</h2>
-                                    <a class="mp-back" href="#">back</a>
-                                    <ul>
-                                        <li class ="icon icon-arrow-left">
-                                            <a class="icon icon-phone" href="#">Normal Display</a>
-                                            <div class="mp-level">
-                                                <h2>Normal Display</h2>
-                                                <a class="mp-back" href="#">back</a>
-                                                <ul>
-                                                    
-                                                    <li class="icon icon-arrow-left">
-                                                        <a class="icon icon-phone" href="#">Local File</a>
-                                                        <div class="mp-level" id="choose">
-                                                            <input class="input-file" type="file" id="input-video-normal-display">
-                                                            <label for="input-video-normal-display" class="input-file-trigger" tabindex="0">Select a file...</label>
-                                                            <p class="file-return"></p>
-                                                            <div class="load-file load-normal-display">Load Video</div>
-                                                        </div>
+                                    </li>
+                                    <li><a class="icon icon-phone" href="#">URL</a></li>
+                                    <li class="icon icon-arrow-left">
+                                        <a class="icon icon-phone" href="#">Select Tables</a>
+                                        <div class="mp-level">
+                                            Select Tables
+                                            <div class="table_position" id="table_position_NW"><span>NW</span></div>
+                                            <div class="table_position" id="table_position_NE"><span>NE</span></div>
+                                            <div class="table_position" id="table_position_SW"><span>SW</span></div>
+                                            <div class="table_position" id="table_position_SE"><span>SE</span></div>
+                                        </div>
 
-                                                    </li>
-                                                    <li><a class="icon icon-phone" href="#">URL</a></li>
-                                                </ul>
-                                            </div>
-                                        </li>
-                                        <li class="icon icon-arrow-left">
-                                            <a class="icon icon-tv" href="#">Tiled Display</a>
-                                            <div class="mp-level">
-                                                <h2>Tiled Display</h2>
-                                                <a class="mp-back" href="#">back</a>
-                                                <ul>
-                                                    <li class ="icon icon-arrow-left">
-                                                        <a class="icon icon-phone tiled_display_all" href="#">All</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                        <li class="icon icon-arrow-left">
+                            <a class="icon icon-news" href="#">Pdf</a>
+                            <div class="mp-level" id="choose">
+                                <h2 class="icon icon-display">Pdf</h2>
+                                <a class="mp-back" href="#">back</a>
+                                <input class="input-file" type="file" id="input-pdf">
+                                <label for="input-pdf" class="input-file-trigger" tabindex="0">Select a file...</label>
+                                <p class="file-return"></p>
+                                <div class="load-file load-pdf">Load PDF</div>
 
-                                                        <ul>
+                            </div>
+                        </li>
+                        <li><a class="icon icon-photo load-shared-window">Shared Window</a></li>
+                    </ul>
 
-                                                            <li class="icon icon-arrow-left">
-                                                                <a class="icon icon-phone" href="#">Local File</a>
-                                                                <div class="mp-level" id="choose">
-                                                                    <input class="input-file" type="file" id="input-video-tiled-display">
-                                                                    <label for="input-video-tiled-display" class="input-file-trigger" tabindex="0">Select a file...</label>
-                                                                    <p class="file-return"></p>
-                                                                    <div class="load-file load-tiled-display">Load Video</div>
-                                                                </div>
+                </div>
+            </nav>
+            <!-- /mp-menu -->
+            <div class="scroller">
+                <!-- this is for emulating position fixed of the nav -->
+                <!-- Top Navigation -->
+                <div class="codrops-top clearfix">
+                    PROJET TABLE TACTILE
+                    <span class="left"> <a class="codrops-icon codrops-icon-prev" href="http://air.imag.fr/index.php/Proj-2014-2015-SmartClassRoom"><span>Documentation</span></a></span>
 
-                                                            </li>
-                                                            <li><a class="icon icon-phone" href="#">URL</a></li>
-                                                        </ul>
+                    <span class="right"><a class="codrops-icon codrops-icon-drop" href="https://github.com/falle38/SmartClassroom-TiledDisplayPart"><span>Lien Github</span></a></span>
+                </div>
+                <div class="display">
 
-                                                    </li>
-                                                    <li class="icon icon-arrow-left"><a class="icon icon-phone" href="#">Select Tables</a>
-                                                        <div class="mp-level">
-                                                            Select Tables
-                                                            <div class="table_position" id="table_position_NW"><span>NW</span></div>
-                                                            <div class="table_position" id="table_position_NE"><span>NE</span></div>
-                                                            <div class="table_position" id="table_position_SW"><span>SW</span></div>
-                                                            <div class="table_position" id="table_position_SE"><span>SE</span></div>
-                                                        </div>
-                                                    
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </li>
-                                        <li class="icon icon-arrow-left">
-                                            <a class="icon icon-camera" href="#">Cameras</a>
-                                            <div class="mp-level">
-                                                <h2>Cameras</h2>
-                                                <a class="mp-back" href="#">back</a>
-                                                <ul>
-                                                    <li><a href="#">Smart Shot</a></li>
-                                                    <li><a href="#">Power Shooter</a></li>
-                                                    <li><a href="#">Easy Photo Maker</a></li>
-                                                    <li><a href="#">Super Pixel</a></li>
-                                                </ul>
-                                            </div>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </li>
-							<li class="icon icon-arrow-left">
-								<a class="icon icon-display" href="#">PDF</a>
-                                <div class="mp-level" id="choose">
-                                    <h2 class="icon icon-display">PDF</h2>
-                                    <a class="mp-back" href="#">back</a>
-                                    <input class="input-file" type="file" id="input-pdf">
-                                    <label for="input-pdf" class="input-file-trigger" tabindex="0">Select a file...</label>
-                                    <p class="file-return"></p>
-                                    <div class="load-file load-pdf">Load PDF</div>
-
-                                </div>
-							</li>
-							<li class="icon icon-arrow-left">
-								<a class="icon icon-news" href="#">Magazines</a>
-								<div class="mp-level">
-									<h2 class="icon icon-news">Magazines</h2>
-									<a class="mp-back" href="#">back</a>
-									<ul>
-										<li><a href="#">National Geographic</a></li>
-										<li><a href="#">Scientific American</a></li>
-										<li><a href="#">The Spectator</a></li>
-										<li><a href="#">The Rambler</a></li>
-										<li><a href="#">Physics World</a></li>
-										<li><a href="#">The New Scientist</a></li>
-									</ul>
-								</div>
-							</li>
-							<li class="icon icon-arrow-left">
-								<a class="icon icon-shop" href="#">Store</a>
-								<div class="mp-level">
-									<h2 class="icon icon-shop">Store</h2>
-									<a class="mp-back" href="#">back</a>
-									<ul>
-										<li class="icon icon-arrow-left">
-											<a class="icon icon-t-shirt" href="#">Clothes</a>
-											<div class="mp-level">
-												<h2 class="icon icon-t-shirt">Clothes</h2>
-												<a class="mp-back" href="#">back</a>
-												<ul>
-													<li class="icon icon-arrow-left">
-														<a class="icon icon-female" href="#">Women's Clothing</a>
-														<div class="mp-level">
-															<h2 class="icon icon-female">Women's Clothing</h2>
-															<a class="mp-back" href="#">back</a>
-															<ul>
-																<li><a href="#">Tops</a></li>
-																<li><a href="#">Dresses</a></li>
-																<li><a href="#">Trousers</a></li>
-																<li><a href="#">Shoes</a></li>
-																<li><a href="#">Sale</a></li>
-															</ul>
-														</div>
-													</li>
-													<li class="icon icon-arrow-left">
-														<a class="icon icon-male" href="#">Men's Clothing</a>
-														<div class="mp-level">
-															<h2 class="icon icon-male">Men's Clothing</h2>
-															<a class="mp-back" href="#">back</a>
-															<ul>
-																<li><a href="#">Shirts</a></li>
-																<li><a href="#">Trousers</a></li>
-																<li><a href="#">Shoes</a></li>
-																<li><a href="#">Sale</a></li>
-															</ul>
-														</div>
-													</li>
-												</ul>
-											</div>
-										</li>
-										<li>
-											<a class="icon icon-diamond" href="#">Jewelry</a>
-										</li>
-										<li>
-											<a class="icon icon-music" href="#">Music</a>
-										</li>
-										<li>
-											<a class="icon icon-food" href="#">Grocery</a>
-										</li>
-									</ul>
-								</div>
-							</li>
-                            <li><a class="icon icon-photo load-ping-pong">Ping Pong</a></li>
-							<li><a class="icon icon-photo load-shared-window">Create Shared Window</a></li>
-							<li><a class="icon icon-wallet" href="#">Credits</a></li>
-						</ul>
-							
-					</div>
-				</nav>
-				<!-- /mp-menu -->
-
-				<div class="scroller"><!-- this is for emulating position fixed of the nav -->
-                    <!-- Top Navigation -->
-                    <div class="codrops-top clearfix">
-                        TABLE TACTILE
-                        <span class="left"> <a class="codrops-icon codrops-icon-prev" href="http://tympanus.net/Tutorials/CircularNavigation/"><span>Previous Window</span></a></span>
-                            
-                            <span class="right"><a class="codrops-icon codrops-icon-drop" href="http://tympanus.net/codrops/?p=16252"><span>Back to the Codrops Article</span></a></span>
+                    <div class="block clearfix">
+                        <p><a href="#" id="trigger" class="menu-trigger"></a></p>
                     </div>
-                    <div class="display">
+                </div><!-- /scroller-inner -->
+            </div><!-- /scroller -->
+        </div><!-- /pusher -->
 
-                        <div class="block clearfix">
-                            <p><a href="#" id="trigger" class="menu-trigger"></a></p>
-                        </div>
-                    </div><!-- /scroller-inner -->
-				</div><!-- /scroller -->
+    </div><!-- /container -->
 
-			</div><!-- /pusher -->
-        
-		</div><!-- /container -->
-		
-		<script>
-			
-		</script>
-	</body>
+    <script>
+
+    </script>
+</body>
 </html>

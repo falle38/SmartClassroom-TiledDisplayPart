@@ -121,6 +121,33 @@ everyone.now.getWindowId = function (type, url) {
     nbWindow++;
 };
 
+// called from client - just execute one client context (host)
+everyone.now.shareWindow = function (windowId, title, type) {
+    // update the data to the other clients other than host
+    everyone.now.filterShareWindow(windowId, title, type, this.now.id);
+};
+
+// called from client - just execute one client context (host)
+everyone.now.filterShareWindow = function (windowId, title, type, hostId) {
+    // update the data to the other clients other than host
+    if (this.now.id == hostId) return;
+    this.now.createSharedWindow(windowId, title, type);
+
+};
+
+// called from client - just execute one client context (host)
+everyone.now.shareWindowPosition = function (windowId, orientation, top, left, hostWidth, hostHeight) {
+    // update the data to the other clients other than host
+    everyone.now.filterShareWindowPosition(windowId, orientation, top, left, hostWidth, hostHeight, this.now.id);
+};
+
+// called from client - just execute one client context (host)
+everyone.now.filterShareWindowPosition = function (windowId, orientation, top, left, hostWidth, hostHeight, hostId) {
+    // update the data to the other clients other than host
+    if (this.now.id == hostId) return;
+    this.now.updateWindowPosition(windowId, orientation, top, left, hostWidth, hostHeight);
+
+};
 
 // called from client - just execute one client context (host)
 everyone.now.askRemoteMediaControl = function (windowId, mediaType, controlType, value, isForEveryone) {
@@ -153,7 +180,7 @@ everyone.now.askTiledDisplay = function (windowId, type, title, isPlayingAudio, 
     };
     everyone.count(countCallback);
    
-    this.now.ReadyToReceiveVideo(windowId, type);
+    this.now.ReadyToReceiveMedia(windowId, type);
     //var host = { "client": this.now.id, "nbCurrent": 0, "nbExpected": 1,"isPlayingAudio":isPlayingAudio ,"nbReadyAudio": 0, "nbReadyAudioExpected": 2 }
     //hosts[windowId] = host;
     //everyone.now.filterAskTiledDisplay(windowId, title, data);
@@ -185,7 +212,7 @@ everyone.now.filterShareData = function (windowId, data, hostId) {
 };
 
 
-everyone.now.ReadyToReceiveVideo = function (windowId, type) {
+everyone.now.ReadyToReceiveMedia = function (windowId, type) {
     hosts[windowId].nbCurrent++;
     hosts[windowId].group.addUser(this.user.clientId)
     console.log(hosts[windowId].nbCurrent);
@@ -231,35 +258,11 @@ sendAudioDataToStreamList = function (data) {
     }
 }
 
-// called from client - just execute one client context (host)
-everyone.now.shareWindowPosition = function (windowId, orientation, top, left) {
-    // update the data to the other clients other than host
-    everyone.now.filterShareWindowPosition(windowId, orientation, top, left, this.now.id);
-};
-
-// called from client - just execute one client context (host)
-everyone.now.filterShareWindowPosition = function (windowId, orientation, top, left, hostId) {
-    // update the data to the other clients other than host
-    if (this.now.id == hostId) return;
-    this.now.updateWindowPosition(windowId, orientation, top, left);
-
-};
 
 
 
-// called from client - just execute one client context (host)
-everyone.now.shareWindow = function (windowId, title, type) {
-    // update the data to the other clients other than host
-    everyone.now.filterShareWindow(windowId, title, type, this.now.id);
-};
 
-// called from client - just execute one client context (host)
-everyone.now.filterShareWindow = function (windowId, title, type, hostId) {
-    // update the data to the other clients other than host
-    if (this.now.id == hostId) return;
-    this.now.createSharedWindow(windowId, title, type);
 
-};
 
 
 

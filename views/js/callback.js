@@ -297,7 +297,7 @@ $(document).ready(function () {
             createCanvas(windowId, title, 400, 300, type, false, true, data);
         }
         // initializeAudioplayer(now.id, windowId);
-        ReadyToReceiveVideo(windowId, type);
+        ReadyToReceiveMedia(windowId, type);
     };
     
     switchToTiledDisplay = function (windowId){
@@ -392,28 +392,32 @@ $(document).ready(function () {
 
     // called from server - to update the image data just for this client page
     // the data is a base64-encoded image
-    updateWindowPosition = function (windowId, orientationRemoteClient, top, left) {
+    updateWindowPosition = function (windowId, orientationRemoteClient, top, left, hostWidth, hostHeight) {
         var window = getWindow(windowId);
         window.style.removeProperty('-webkit-transition');
         window.style.removeProperty('transition');
         
-        
-        var display = document.getElementsByClassName("display")[0];
+        var width = $('div.display').width();
+        var height = $('div.display').height();
+        //Adapt the scale if the host has a different height and width of display
+        console.log(hostWidth +"/"+ hostHeight)
+        left = (left * width) / hostWidth;
+        top = (top * height) /hostHeight ;
 
         if (infos.orientation == "NW") {
             if (orientationRemoteClient == "NE") {
-                left = left + display.clientWidth;
+                left = left + width;
                 window.style.top = top + "px";
                 window.style.left = left + "px";
             }
             else if (orientationRemoteClient == "SW") {
-                top = top + display.clientHeight;
+                top = top + height;
                 window.style.top = top + "px";
                 window.style.left = left + "px";
             }
             else if (orientationRemoteClient == "SE") {
-                left = left + display.clientWidth;
-                top = top + display.clientHeight;
+                left = left + width;
+                top = top + height;
                 window.style.top = top + "px";
                 window.style.left = left + "px";
             }
@@ -421,54 +425,54 @@ $(document).ready(function () {
         }
         else if (infos.orientation == "NE") {
             if (orientationRemoteClient == "NW") {
-                left = left - display.clientWidth;
+                left = left - width;
                 window.style.top = top + "px";
                 window.style.left = left + "px";
             }
             else if (orientationRemoteClient == "SW") {
-                left = left - display.clientWidth;
-                top = top + display.clientHeight;
+                left = left - width;
+                top = top + height;
                 window.style.top = top + "px";
                 window.style.left = left + "px";
             }
             else if (orientationRemoteClient == "SE") {
-                top = top + display.clientHeight;
+                top = top + height;
                 window.style.top = top + "px";
                 window.style.left = left + "px";
             }
         }
         else if (infos.orientation == "SW") {
             if (orientationRemoteClient == "NE") {
-                left = left + display.clientWidth;
-                top = top - display.clientHeight;
+                left = left + width;
+                top = top - height;
                 window.style.top = top + "px";
                 window.style.left = left + "px";
             }
             else if (orientationRemoteClient == "NW") {
-                top = top - display.clientHeight;
+                top = top - height;
                 window.style.top = top + "px";
                 window.style.left = left + "px";
             }
             else if (orientationRemoteClient == "SE") {
-                left = left + display.clientWidth;
+                left = left + width;
                 window.style.top = top + "px";
                 window.style.left = left + "px";
             }
         }
         else if (infos.orientation == "SE") {
             if (orientationRemoteClient == "NW") {
-                left = left - display.clientWidth;
-                top = top - display.clientHeight;
+                left = left - width;
+                top = top - height;
                 window.style.top = top + "px";
                 window.style.left = left + "px";
             }
             else if (orientationRemoteClient == "NE") {
-                top = top - display.clientHeight;
+                top = top - height;
                 window.style.top = top + "px";
                 window.style.left = left + "px";
             }
             else if (orientationRemoteClient == "SW") {
-                left = left - display.clientWidth;
+                left = left - width;
                 window.style.top = top + "px";
                 window.style.left = left + "px";
             }
@@ -488,16 +492,27 @@ $(document).ready(function () {
 
     remoteGameControl = function (windowId, game, controlType, value) {
         if (game == "ping-pong") {
-            if (controlType == "moveBall") {
-                windowList["canvas" + windowId].data.game.ball.x = value.x;
-                windowList["canvas" + windowId].data.game.ball.y = value.y;
+            if (controlType == "start") {
+                console.log("REMOTE START")
+                windowList["canvas" + windowId].data.game.start();
+            }
+            else if (controlType == "restart") {
+                windowList["canvas" + windowId].data.game.restart();
+            }
+            else if (controlType == "moveBall") {
+                var x = (value.x * windowList["canvas" + windowId].data.game.W) / value.W;
+                var y = (value.y * windowList["canvas" + windowId].data.game.H) / value.H;
+                windowList["canvas" + windowId].data.game.ball.x = windowList["canvas" + windowId].data.game.W - x;
+                windowList["canvas" + windowId].data.game.ball.y = windowList["canvas" + windowId].data.game.H - y;
             }
             else if (controlType == "movePaddle") {
-                windowList["canvas" + windowId].data.game.movePaddle(value.id, value.x);
+                var x = (value.x * windowList["canvas" + windowId].data.game.W) / value.W;
+                windowList["canvas" + windowId].data.game.movePaddle(value.id, windowList["canvas" + windowId].data.game.W - windowList["canvas" + windowId].data.game.paddles[value.id].w - x);
             }
             else if (controlType == "fullscreen") {
-                windowList["canvas" + windowId].data.game.launchFullScreen();
                 windowList["canvas" + windowId].isTiled = true;
+                windowList["canvas" + windowId].data.game.launchFullScreen();
+                
             }
             else if (controlType == "endfullscreen") {
                 var eventEndFullscreen = new Event('endfullscreen');

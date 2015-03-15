@@ -29,13 +29,18 @@ function addWindow(windowId, title, width, height, type, isShared) {
     var iconClose = document.createElement('label');
     iconClose.className = 'icon-close';
     iconClose.innerHTML = "x";
-    var WindowNameH2 = document.createElement('h2');
-    WindowNameH2.innerHTML = title;
+    var WindowTitle = document.createElement('div');
+    WindowTitle.className = 'title-header';
+    WindowTitle.innerHTML = title;
     
-    windowHeader.appendChild(iconFullscreen);
-    windowHeader.appendChild(iconTiled);
-    windowHeader.appendChild(iconClose);
-    windowHeader.appendChild(WindowNameH2);
+    var toolbar = document.createElement('div');
+    toolbar.className = 'toolbar-header';
+    toolbar.appendChild(iconFullscreen);
+    toolbar.appendChild(iconTiled);
+    toolbar.appendChild(iconClose);
+
+    windowHeader.appendChild(toolbar);
+    windowHeader.appendChild(WindowTitle);
     
     var windowFormDiv = document.createElement('div');
     windowFormDiv.className = 'window-form';
@@ -44,9 +49,8 @@ function addWindow(windowId, title, width, height, type, isShared) {
     
     windowDiv.appendChild(windowHeader);
     windowDiv.appendChild(windowFormDiv);
-    
-    document.getElementsByClassName('display')[0].appendChild(windowDiv);
-    
+    var display = document.getElementsByClassName("display")[0];
+   display.appendChild(windowDiv);
     $("#window-header" + windowId).mousedown(function (e) {
         console.log("Mouse Event")
         $("#" + e.currentTarget.parentElement.id).pep({
@@ -59,13 +63,17 @@ function addWindow(windowId, title, width, height, type, isShared) {
             },
             drag: function (ev, obj) {
                 if (isShared) {
-                    now.shareWindowPosition(windowId, infos.orientation, obj.$el.context.offsetTop, obj.$el.context.offsetLeft);
+                    var width = $('div.display').width();
+                    var height = $('div.display').height();
+                    now.shareWindowPosition(windowId, infos.orientation, obj.$el.context.offsetTop, obj.$el.context.offsetLeft, width, height);
                 }
             },
             
             easing: function (ev, obj) {
                 if (isShared) {
-                    now.shareWindowPosition(windowId, infos.orientation, obj.$el.context.offsetTop, obj.$el.context.offsetLeft);
+                    var width = $('div.display').width();
+                    var height = $('div.display').height();
+                    now.shareWindowPosition(windowId, infos.orientation, obj.$el.context.offsetTop, obj.$el.context.offsetLeft, width, height);
                 }
             },
             stop: function (ev, obj) {
@@ -95,12 +103,16 @@ function addWindow(windowId, title, width, height, type, isShared) {
             },
             drag: function (ev, obj) {
                 if (isShared) {
-                    now.shareWindowPosition(windowId, infos.orientation, obj.$el.context.offsetTop, obj.$el.context.offsetLeft);
+                    var width = $('div.display').width();
+                    var height = $('div.display').height();
+                    now.shareWindowPosition(windowId, infos.orientation, obj.$el.context.offsetTop, obj.$el.context.offsetLeft, width, height);
                 }
             },
             easing: function (ev, obj) {
                 if (isShared) {
-                    now.shareWindowPosition(windowId, infos.orientation, obj.$el.context.offsetTop, obj.$el.context.offsetLeft);
+                    var width = $('div.display').width();
+                    var height = $('div.display').height();
+                    now.shareWindowPosition(windowId, infos.orientation, obj.$el.context.offsetTop, obj.$el.context.offsetLeft, width, height);
                 }
             },
             stop: function (ev, obj) {
@@ -350,7 +362,6 @@ function createPdfControls(windowId, isFullscreen, isMaster) {
     
     seekBar.addEventListener('input', function () {
         if (isMaster) {
-            console.log(this.value);
             loadPdfPage(windowId, parseInt(this.value) + 1);
             askRemoteMediaControl(windowId, "pdf", "seekbar-event", this.value, true);
         }
@@ -545,7 +556,7 @@ function fullWindow(canvas) {
         
         if (windowList[canvas.id].type == "video") {
             var videoControls = createVideoControls(windowId, true, isMaster);
-            videoControls.style.marginTop = "-37px";
+            videoControls.style.marginTop = "-64px";
             
             var listenerVideoTimeUpdate = function (e) {
                 
@@ -621,11 +632,13 @@ function fullWindow(canvas) {
         }
         else if (windowList[canvas.id].type == "pdf") {
             var pdfControls = createPdfControls(windowId, true, isMaster);
-            pdfControls.style.marginTop = "-37px";
+            pdfControls.style.marginTop = "-64px";
             
             var timeoutIdentifier;
-            $("#" + pdfControls.id).mousemove(function (e) {
+            $("#" + pdfControls.id).mousedown(function (e) {
+                console.log(timeoutIdentifier)
                 if (timeoutIdentifier) {
+                    
                     clearTimeout(timeoutIdentifier);
                 }
                 timeoutIdentifier = setTimeout(function () {
@@ -648,18 +661,12 @@ function fullWindow(canvas) {
             }
             canvasToDraw.addEventListener("mousemove", fullscreenControlListener, false);
             $("body").append(pdfControls);
-        }
-        
-        var fullscreenButton = document.getElementById('close-fullscreen');
-        
-        
-        
-        var draw = canvasToDraw.getContext('2d');
-        
-        if (windowList[canvas.id].type == "pdf") {
             reloadCanvas(canvas);
         }
         
+        var fullscreenButton = document.getElementById('close-fullscreen');
+        var draw = canvasToDraw.getContext('2d');
+
         window.addEventListener('resize', function (e) {
             
             canvasToDraw.width = window.innerWidth;
@@ -680,18 +687,22 @@ function fullWindow(canvas) {
             canvas.style.display = saveDisplay;
             reloadCanvas(canvas)
             
-            if (isMaster) {
-                video.removeEventListener("timeupdate", listenerVideoTimeUpdate, false);
-            }
-            else {
-                canvas.removeEventListener("dataupdate", listenerCanvasDataUpdate, false);
-            }
+            
             canvasToDraw.style.display = "none";
             fullWindowState = false;
             $("#fullscreen-controls-id").slideUp(1);
             
             if (windowList[canvas.id].type == "video") {
                 document.body.removeChild(videoControls);
+                if (isMaster) {
+                    video.removeEventListener("timeupdate", listenerVideoTimeUpdate, false);
+                }
+                else {
+                    canvas.removeEventListener("dataupdate", listenerCanvasDataUpdate, false);
+                }
+            }
+            else if (windowList[canvas.id].type == "pdf") {
+                document.body.removeChild(pdfControls);
             }
             canvasToDraw.removeEventListener("mousemove", fullscreenControlListener, false);
             fullscreenButton.removeEventListener("mousedown", askEndFullscreen, false);
@@ -781,16 +792,16 @@ function initializeEventListener() {
     
     $(".display").on("touchstart mousedown", "label.icon-close", function (e) {
         e.preventDefault();
-        e.currentTarget.parentElement.parentElement.parentElement.removeChild(e.currentTarget.parentElement.parentElement);
+        e.currentTarget.parentElement.parentElement.parentElement.parentElement.removeChild(e.currentTarget.parentElement.parentElement.parentElement);
     });
     
     $(".display").on("touchstart mousedown", "label.icon-fullscreen", function (e) {
         e.preventDefault();
-        var windowId = e.currentTarget.parentElement.parentElement.id.split('window')[1];
+        var windowId = e.currentTarget.parentElement.parentElement.parentElement.id.split('window')[1];
         var canvas = document.getElementById("canvas" + windowId);
         if (windowList[canvas.id].type == "game") {
-            windowList[canvas.id].data.game.launchFullScreen();
             windowList[canvas.id].isTiled = true;
+            windowList[canvas.id].data.game.launchFullScreen();
             askRemoteGameControl(windowId, "ping-pong", "fullscreen", "", true);
         }
         else {
@@ -800,7 +811,7 @@ function initializeEventListener() {
     
     $(".display").on("touchstart mousedown", "label.icon-tiled", function (e) {
         e.preventDefault();
-        var windowId = e.currentTarget.parentElement.parentElement.id.split('window')[1];
+        var windowId = e.currentTarget.parentElement.parentElement.parentElement.id.split('window')[1];
         askSwitchToTiledDisplay(windowId);
     });
     

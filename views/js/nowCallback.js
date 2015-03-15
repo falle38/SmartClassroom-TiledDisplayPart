@@ -28,8 +28,8 @@ $(function () {
         launchTiledDisplay(windowId, type, title, data);
     };
     
-    now.updateWindowPosition = function (windowId, orientation, top, left) {
-        updateWindowPosition(windowId, orientation, top, left);
+    now.updateWindowPosition = function (windowId, orientation, top, left, hostWidth, hostHeight) {
+        updateWindowPosition(windowId, orientation, top, left, hostWidth, hostHeight);
     };
 
     now.createSharedWindow = function (windowId, title, type) {
@@ -40,8 +40,8 @@ $(function () {
         broadcastVideo(windowId, isPlayingAudio);
     };
 
-    ReadyToReceiveVideo = function (windowId, type) {
-        now.ReadyToReceiveVideo(windowId, type);
+    ReadyToReceiveMedia = function (windowId, type) {
+        now.ReadyToReceiveMedia(windowId, type);
     };
     
     now.switchToTiledDisplay = function (windowId){
@@ -91,8 +91,8 @@ $(function () {
     };
     
 
-    shareWindowPosition = function (windowID, orientation, top, left) {
-        now.shareWindowPosition(windowID, orientation, top, left);
+    shareWindowPosition = function (windowID, orientation, top, left, hostWidth, hostHeight) {
+        now.shareWindowPosition(windowID, orientation, top, left, hostWidth, hostHeight);
     };
     
     shareWindow = function (windowId, title, type) {
