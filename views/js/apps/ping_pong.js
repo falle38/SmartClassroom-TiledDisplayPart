@@ -6,7 +6,7 @@ launchPingPongGame = function (windowId, isMaster) {
     backing_canvas.width = canvas.width;
     backing_canvas.height = canvas.height;
     if (isMaster) {
-        askTiledDisplay(windowId, "ping-pong", "PING PONG", false, data);
+        shareMediaDisplay(windowId, "ping-pong", "PING PONG", false, data);
     }
     var game = {
         // Initialize canvas and required variables
@@ -113,13 +113,13 @@ launchPingPongGame = function (windowId, isMaster) {
             if (this.mouse.x && this.mouse.y) {
                 //Move only his paddle
                 this.movePaddle(1, this.mouse.x - p.w / 2);
-                askRemoteGameControl(windowId, "ping-pong", "movePaddle", { "id": 2, "x": this.paddles[1].x, "W": this.W }, true);
+                askRemoteGameControl(windowId, "ping-pong", "movePaddle", { "id": 2, "x": this.paddles[1].x, "W": this.W }, "except-host");
             }
             
             if (isMaster) {
                 // Move the ball
                 this.moveBall();
-                askRemoteGameControl(windowId, "ping-pong", "moveBall", { "x": this.ball.x, "y": this.ball.y, "W": this.W, "H": this.H }, true);
+                askRemoteGameControl(windowId, "ping-pong", "moveBall", { "x": this.ball.x, "y": this.ball.y, "W": this.W, "H": this.H }, "except-host");
             }
             
             // Collision with paddles
@@ -516,7 +516,7 @@ launchPingPongGame = function (windowId, isMaster) {
         
         // Click start button
         if (mx >= startX && mx <= (startX + startDeltaX) && my >= startY && my <= (startY + startDeltaY)) {
-            askRemoteGameControl(windowId, "ping-pong", "start", "",true);
+            askRemoteGameControl(windowId, "ping-pong", "start", "", "except-host");
             game.start();
             
         }
@@ -524,16 +524,15 @@ launchPingPongGame = function (windowId, isMaster) {
         // If the game is over, and the restart button is clicked
         if (game.over == 1) {
             if (mx >= restartX && mx <= (restartX + restartDeltaX) && my >= restartY && my <= (restartY + restartDeltaY)) {
-                askRemoteGameControl(windowId, "ping-pong", "restart","" ,true);
+                askRemoteGameControl(windowId, "ping-pong", "restart","" , "except-host");
                 game.restart();
-                
             }
         }
         if (windowList[canvas.id].isTiled) {
             if (mx >= game.quitBtn.x && mx <= (game.quitBtn.x + game.quitBtn.w) && my >= game.quitBtn.y && my <= (game.quitBtn.y + game.quitBtn.h)) {
-                askRemoteGameControl(windowId, "ping-pong", "endfullscreen", "", true);
-                var eventEndFullscreen = new Event('endfullscreen');
-                canvas.dispatchEvent(eventEndFullscreen);
+                askRemoteGameControl(windowId, "ping-pong", "endfullscreen", "", "all");
+                //var eventEndFullscreen = new Event('endfullscreen');
+                //canvas.dispatchEvent(eventEndFullscreen);
             }
         }
     }
@@ -626,23 +625,24 @@ launchPingPongGame = function (windowId, isMaster) {
                 canvas.parentElement.parentElement.style.top = saveTop + "px";
                 canvas.parentElement.parentElement.style.left = saveLeft + "px";
                 canvas.style.display = saveDisplay;
-                reloadCanvas(canvas)
+                reloadCanvas(canvas);
                 
                 canvasToDraw.style.display = "none";
                 fullWindowState = false;
                 drawing = false;
                 windowList[canvas.id].isTiled = false;
+
                 canvasToDraw.removeEventListener("mousemove", trackPosition, false);
                 canvasToDraw.removeEventListener("touchmove", trackPosition, false);
                 canvasToDraw.removeEventListener("mousedown", btnClick, false);
                 canvas.removeEventListener("endfullscreen", endFullscreen, false);
+                
                 game.areaSide = 0;
                 cancelPingPong();
                 startPingPong();
             }
             var askEndFullscreen = function (e) {
-                askRemoteGameControl(windowId, "ping-pong", "endfullscreen", "", true);
-                endFullscreen();
+                askRemoteGameControl(windowId, "ping-pong", "endfullscreen", "", "all");
             }
             
             canvasToDraw.addEventListener("mousemove", trackPosition, false);
@@ -655,9 +655,7 @@ launchPingPongGame = function (windowId, isMaster) {
         }
     }
     
-    
-    
-    
+
     // Add mousemove and mousedown events to the canvas
     canvas.addEventListener("mousemove", trackPosition, true);
     canvas.addEventListener("touchmove", trackPosition, true);
@@ -670,17 +668,14 @@ launchPingPongGame = function (windowId, isMaster) {
     //ctx.translate(canvas.width, 0);
     //ctx.rotate(90 * (Math.PI / 180));
     
-    function doRotate() {
-        // Finally draw the image data from the temp canvas.
+    function drawCanvas() {
+        // Draw the image data from the backing canvas.
         ctx.drawImage(backing_canvas, 0, 0, backing_canvas.width, backing_canvas.height);
-        setTimeout(doRotate, 16);
+        setTimeout(drawCanvas, 16);
     }
-    doRotate();
+    drawCanvas();
     
     //TEST FULLSCREEN
     //fullWindowPingPong();
-    startPingPong();
-
-
-    
+    startPingPong();  
 }

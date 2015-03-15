@@ -34,6 +34,7 @@
     drag:                           function(){},
     stop:                           function(){},
     easing:                         null,
+    rotation:                       false,
     rest:                           function(){},
     moveTo:                         false,
     callIfNotStarted:               ['stop', 'rest'],
@@ -513,20 +514,45 @@
       ev.pep        = {};
 
       if ( this.isTouch(ev) ) {
-
-        ev.pep.x      = ev.originalEvent.touches[0].pageX;
-        ev.pep.y      = ev.originalEvent.touches[0].pageY;
+            
+            if (self.rotation) {
+                ev.pep.x = ev.originalEvent.touches[0].pageX;
+                ev.pep.y = ev.originalEvent.touches[0].pageY;
+            }
+            else {
+                ev.pep.x = ev.originalEvent.touches[0].pageX;
+                ev.pep.y = ev.originalEvent.touches[0].pageY;
+            }
         ev.pep.type   = ev.type;
       
       }
       else if ( this.isPointerEventCompatible() || !this.isTouch(ev) ) {
+            if (ev.pageX) {
+                if (this.options.rotation) {
+                    var width = $('div.display').width();
+                    var height = $('div.display').height();
+                    ev.pep.x = width - ev.pageX;
+                    ev.pep.y = height - ev.pageY;
+                }
+                else{
+                    ev.pep.x = ev.pageX;
+                    ev.pep.y = ev.pageY;
+                }
 
-        if ( ev.pageX  ) {
-          ev.pep.x      = ev.pageX;
-          ev.pep.y      = ev.pageY;
-        } else {
-          ev.pep.x      = ev.originalEvent.pageX;
-          ev.pep.y      = ev.originalEvent.pageY;
+            } else {
+                if (this.options.rotation) {
+                    console.log("rot")
+                    var width = $('div.display').width();
+                    var height = $('div.display').height();
+                    ev.pep.x = width - ev.originalEvent.pageX;
+                    ev.pep.y = height - ev.originalEvent.pageY;
+                }
+                else {
+                    ev.pep.x = ev.originalEvent.pageX;
+                    ev.pep.y = ev.originalEvent.pageY;
+                }
+
+          
         }
 
         ev.pep.type   = ev.type;

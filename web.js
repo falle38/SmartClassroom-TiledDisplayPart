@@ -73,10 +73,12 @@ var nbWindow = 0;
 
 
 
-// trigger when each client user connect to nowjs
+//=============================================================================
+// CALLBACK WHEN CLIENT IS CONNECTED
+//=============================================================================
+
+// Trigger when each client user connect to nowjs
 nowjs.on('connect', function () {
-    
-	
     // for each client user, check if there has already associated name
     if(!this.now.name) {
 	
@@ -108,6 +110,10 @@ nowjs.on('connect', function () {
 
 });
 
+//=============================================================================
+// CALLBACK WHEN CLIENT IS DISCONNECTED
+//=============================================================================
+
 // trigger when each client user disconnect from nowjs
 nowjs.on('disconnect', function() {
     if(this.now.id){
@@ -116,10 +122,18 @@ nowjs.on('disconnect', function() {
     }
 });
 
+//=============================================================================
+// CREATE MEDIA WINDOW : (VIDEO, PDF, APPS ETC...)
+//=============================================================================
+
 everyone.now.getWindowId = function (type, url) {
     this.now.launchWindow(nbWindow, type, url);
     nbWindow++;
 };
+
+//=============================================================================
+// SHARE AND UPDATE WINDOW DATA : (POSITION, CSS ETC...)
+//=============================================================================
 
 // called from client - just execute one client context (host)
 everyone.now.shareWindow = function (windowId, title, type) {
@@ -149,37 +163,22 @@ everyone.now.filterShareWindowPosition = function (windowId, orientation, top, l
 
 };
 
-// called from client - just execute one client context (host)
-everyone.now.askRemoteMediaControl = function (windowId, mediaType, controlType, value, isForEveryone) {
-    if (isForEveryone) {
-        everyone.now.filterRemoteMediaControl(windowId, mediaType, controlType, value, this.now.id);
-    }
-    else {
-        clientList[hosts[windowId].client].object.now.remoteMediaControl(windowId, mediaType, controlType, value);
-    }
-};
-
-// called from server - execute every client context, then we can do filtering
-everyone.now.filterRemoteMediaControl = function (windowId, mediaType, controlType, value, clientId) {
-    // by right, it will execute in every client context include host page, we need to filter out the host by delete its name
-    if (this.now.id == clientId) {return;}
-    // ok, now we call the client side update image method, to update the screen into HTML5 canvas
-    this.now.remoteMediaControl(windowId, mediaType, controlType, value);
-};
-
+//=============================================================================
+// SHARE MEDIA WINDOW : (VIDEO, PDF, APPS ETC...)
+//=============================================================================
 
 // called from client - just execute one client context (host)
-everyone.now.askTiledDisplay = function (windowId, type, title, isPlayingAudio, data) {
+everyone.now.shareMediaDisplay = function (windowId, type, title, isPlayingAudio, data) {
     var client = this;
     var shareMedia = nowjs.getGroup("shareMedia" + windowId);
-   // shareMedia.addUser(this.user.clientId);
+    // shareMedia.addUser(this.user.clientId);
     countCallback = function (nb) {
-        var host = { "client": client.now.id,"group": shareMedia ,"nbCurrent": 0, "nbExpected": nb, "isPlayingAudio": isPlayingAudio , "nbReadyAudio": 0, "nbReadyAudioExpected": nb }
+        var host = { "client": client.now.id, "group": shareMedia , "nbCurrent": 0, "nbExpected": nb, "isPlayingAudio": isPlayingAudio , "nbReadyAudio": 0, "nbReadyAudioExpected": nb }
         hosts[windowId] = host;
-        everyone.now.filterAskTiledDisplay(windowId, type, title, data);
+        everyone.now.filterLaunchSharedMediaDisplay(windowId, type, title, data);
     };
     everyone.count(countCallback);
-   
+    
     this.now.ReadyToReceiveMedia(windowId, type);
     //var host = { "client": this.now.id, "nbCurrent": 0, "nbExpected": 1,"isPlayingAudio":isPlayingAudio ,"nbReadyAudio": 0, "nbReadyAudioExpected": 2 }
     //hosts[windowId] = host;
@@ -190,38 +189,24 @@ everyone.now.askTiledDisplay = function (windowId, type, title, isPlayingAudio, 
 
 
 // called from server - execute every client context, then we can do filtering
-everyone.now.filterAskTiledDisplay = function (windowId, type, title, data) {
+everyone.now.filterLaunchSharedMediaDisplay = function (windowId, type, title, data) {
     // by right, it will execute in every client context include host page, we need to filter out the host by delete its name
-    if (this.now.id == hosts[windowId].client){ return; console.log("HOST NOT READY");}
+    if (this.now.id == hosts[windowId].client) { return; console.log("HOST NOT READY"); }
     // ok, now we call the client side update image method, to update the screen into HTML5 canvas
-    this.now.launchTiledDisplay(windowId, type, title, data);
+    this.now.launchSharedMediaDisplay(windowId, type, title, data);
 };
 
-// called from client - just execute one client context (host)
-everyone.now.shareData = function (windowId, data) {
-    // update the data to the other clients other than host
-    hosts[windowId].group.now.filterShareData(windowId, data, this.now.id);
-};
-
-// called from client - just execute one client context (host)
-everyone.now.filterShareData = function (windowId, data, hostId) {
-    // update the data to the other clients other than host
-    if (this.now.id == hostId) return;
-    this.now.updateData(windowId, data);
-
-};
 
 
 everyone.now.ReadyToReceiveMedia = function (windowId, type) {
     hosts[windowId].nbCurrent++;
     hosts[windowId].group.addUser(this.user.clientId)
     console.log(hosts[windowId].nbCurrent);
-
     if (hosts[windowId].nbCurrent == hosts[windowId].nbExpected) {
         if (type == "video") {
             clientList[hosts[windowId].client].object.now.broadcastVideo(windowId, hosts[windowId].isPlayingAudio);
         }
-    }  
+    }
 };
 
 everyone.now.ReadyToPlayAudio = function (windowId) {
@@ -234,10 +219,70 @@ everyone.now.ReadyToPlayAudio = function (windowId) {
     }
 };
 
+
+//=============================================================================
+// STREAMING VIDEO AND AUDIO
+//=============================================================================
+
 // called from client - just execute one client context (host)
 everyone.now.shareImage = function (windowId, image) {
     // update the data to the other clients other than host
     hosts[windowId].group.now.updateCanvas(windowId, image);
+};
+
+everyone.now.streamAudioToClient = function (videoPath) {
+    var proc = ffmpeg(videoPath)
+   .setFfmpegPath("C:\\dev\\ffmpeg-win64-shared\\bin\\ffmpeg.exe")
+   .setFfprobePath("C:\\dev\\ffmpeg-win64-shared\\bin\\ffprobe.exe")
+   .setFlvtoolPath("C:\\dev\\flvtool2\\flvtool2.exe")
+   // use the 'flashvideo' preset (located in /lib/presets/flashvideo.js)
+   .preset('flashvideo')
+   // setup event handlers
+    .format('flv')
+    .noVideo()
+   .on('end', function () {
+        console.log('file has been converted succesfully');
+    })
+   .on('error', function (err) {
+        console.log('an error happened: ' + err.message);
+    })
+    // save to stream
+   .pipe({ end: true }).on('data', function (chunk) {
+        //console.log("DATA_AUDIO");
+        sendAudioDataToStreamList(chunk);
+    });
+}
+
+sendAudioDataToStreamList = function (data) {
+    for (var i in clientAudioStreamList) {
+        clientAudioStreamList[i].write(data);
+    }
+}
+
+
+//=============================================================================
+// REMOTE CONTROL FOR SYNCHRONIZING MEDIA OF CLIENTS
+//=============================================================================
+
+// called from client - just execute one client context (host)
+everyone.now.askRemoteMediaControl = function (windowId, mediaType, controlType, value, destination) {
+    if (destination == "all") {
+        everyone.now.remoteMediaControl(windowId, mediaType, controlType, value);
+    }
+    else if (destination == "except-host") {
+        everyone.now.filterRemoteMediaControl(windowId, mediaType, controlType, value, this.now.id);
+    }
+    else if(destination == "master"){
+        clientList[hosts[windowId].client].object.now.remoteMediaControl(windowId, mediaType, controlType, value);
+    }
+};
+
+// called from server - execute every client context, then we can do filtering
+everyone.now.filterRemoteMediaControl = function (windowId, mediaType, controlType, value, clientId) {
+    // by right, it will execute in every client context include host page, we need to filter out the host by delete its name
+    if (this.now.id == clientId) {return;}
+    // ok, now we call the client side update image method, to update the screen into HTML5 canvas
+    this.now.remoteMediaControl(windowId, mediaType, controlType, value);
 };
 
 // called from client - just execute one client context (host)
@@ -252,64 +297,27 @@ everyone.now.askSwitchToNormalDisplay = function (windowId) {
     hosts[windowId].group.now.switchToNormalDisplay(windowId);
 };
 
-sendAudioDataToStreamList = function (data) {
-    for (var i in clientAudioStreamList) {
-        clientAudioStreamList[i].write(data);
-    }
-}
 
-
-
-
-
-
-
-
-
-sendAudioDataToStreamList = function (data) {
-    for (var i in clientAudioStreamList) {
-        clientAudioStreamList[i].write(data);
-    }
-}
-
-everyone.now.streamAudioToClient = function(videoPath){
-    var proc = ffmpeg(videoPath)
-   .setFfmpegPath("C:\\dev\\ffmpeg-win64-shared\\bin\\ffmpeg.exe")
-   .setFfprobePath("C:\\dev\\ffmpeg-win64-shared\\bin\\ffprobe.exe")
-   .setFlvtoolPath("C:\\dev\\flvtool2\\flvtool2.exe")
-   // use the 'flashvideo' preset (located in /lib/presets/flashvideo.js)
-   .preset('flashvideo')
-   // setup event handlers
-    .format('flv')
-    .noVideo()
-   .on('end', function () {
-       console.log('file has been converted succesfully');
-   })
-   .on('error', function (err) {
-       console.log('an error happened: ' + err.message);
-   })
-    // save to stream
-   .pipe({ end: true }).on('data', function (chunk) {
-       //console.log("DATA_AUDIO");
-       sendAudioDataToStreamList(chunk);
-   });
-}
-
-
+//=============================================================================
+// REMOTE CONTROL FOR SYNCHRONIZING PING-PONG GAME BETWEEN CLIENTS
+//=============================================================================
+    
 // called from client - just execute one client context (host)
-everyone.now.askRemoteGameControl = function (windowId, game, controlType, value, isForEveryone) {
-    if (isForEveryone) {
+everyone.now.askRemoteGameControl = function (windowId, game, controlType, value, destination) {
+    if (destination == "all"){
+        everyone.now.remoteGameControl(windowId, game, controlType, value, this.now.id);
+    }
+    else if (destination == "except-host") {
         everyone.now.filterRemoteGameControl(windowId, game, controlType, value, this.now.id);
     }
-    else {
+    else if (destination == "master") {
         clientList[hosts[windowId].client].object.now.remoteGameControl(windowId, game, controlType, value);
     }
 };
 
 // called from server - execute every client context, then we can do filtering
 everyone.now.filterRemoteGameControl = function (windowId, game, controlType, value, clientId) {
-    // by right, it will execute in every client context include host page, we need to filter out the host by delete its name
+    //The client which has launched askRemoteGameControl is unauthorized to pass
     if (this.now.id == clientId) { return; }
-    // ok, now we call the client side update image method, to update the screen into HTML5 canvas
     this.now.remoteGameControl(windowId, game, controlType, value);
 };
