@@ -129,7 +129,7 @@
 			});
 
 			this.trigger.addEventListener('closeMenu', function (ev) {
-			    ev.stopPropagation();
+			   // ev.stopPropagation();
 			    ev.preventDefault();
 			    if (self.open) {
 			        self._resetMenu();

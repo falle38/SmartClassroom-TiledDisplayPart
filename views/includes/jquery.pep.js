@@ -513,11 +513,12 @@
   Pep.prototype.normalizeEvent = function(ev) {
       ev.pep        = {};
 
-      if ( this.isTouch(ev) ) {
-            
-            if (self.rotation) {
-                ev.pep.x = ev.originalEvent.touches[0].pageX;
-                ev.pep.y = ev.originalEvent.touches[0].pageY;
+      if ( this.isTouch(ev) ) {    
+            if (this.options.rotation) {
+                var width = $('div.display').width();
+                var height = $('div.display').height();
+                ev.pep.x = width - ev.originalEvent.touches[0].pageX;
+                ev.pep.y = height - ev.originalEvent.touches[0].pageY;
             }
             else {
                 ev.pep.x = ev.originalEvent.touches[0].pageX;

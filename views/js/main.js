@@ -142,7 +142,8 @@ function addWindow(windowId, title, width, height, type, isShared) {
         console.log("Touch Event")
         e.preventDefault();
         $("#" + e.currentTarget.parentElement.id).pep({
-            //constrainTo: 'parent',
+            // constrainTo: 'parent',
+            rotation : isRotated,
             velocityMultiplier: 5,
             start: function (ev, obj) {
                 if (notHead) {
@@ -151,21 +152,39 @@ function addWindow(windowId, title, width, height, type, isShared) {
                 //obj.$el.css({ background : 'red'});
             },
             drag: function (ev, obj) {
+                
+                var width = $('div.display').width();
+                var height = $('div.display').height();
                 if (isShared) {
-                    var width = $('div.display').width();
-                    var height = $('div.display').height();
                     now.shareWindowPosition(windowId, infos.orientation, obj.$el.context.offsetTop, obj.$el.context.offsetLeft, width, height);
+                    //if (isRotated) {
+                    //    now.shareWindowPosition(windowId, infos.orientation, height - obj.$el.context.offsetTop, width - obj.$el.context.offsetLeft, width, height);
+                        
+                    //}
+                    //else {
+                    //    now.shareWindowPosition(windowId, infos.orientation, obj.$el.context.offsetTop, obj.$el.context.offsetLeft, width, height);
+                    //}
                 }
             },
+            
             easing: function (ev, obj) {
+                var width = $('div.display').width();
+                var height = $('div.display').height();
+                
                 if (isShared) {
-                    var width = $('div.display').width();
-                    var height = $('div.display').height();
                     now.shareWindowPosition(windowId, infos.orientation, obj.$el.context.offsetTop, obj.$el.context.offsetLeft, width, height);
+                    //if (isRotated) {
+                    //    now.shareWindowPosition(windowId, infos.orientation, height - obj.$el.context.offsetTop, width - obj.$el.context.offsetLeft, width, height);
+                        
+                    //}
+                    //else {
+                    //    now.shareWindowPosition(windowId, infos.orientation, obj.$el.context.offsetTop, obj.$el.context.offsetLeft, width, height);
+                    //}
                 }
             },
             stop: function (ev, obj) {
                 var vel = obj.velocity();
+                //console.log(vel);
                 
                 if (vel.x > 1500 || vel.y > 1500 || vel.x < -1500 || vel.y < -1500) {
                     console.log("TABLE SUIVANTE");

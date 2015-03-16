@@ -2,12 +2,13 @@
 
     var infos;
     
-    var event1 = new Event('closeMenu');
+    
     var audioplayer;
 var menu;
 
 $(document).ready(function () {
     var event = new Event('draw');
+    var eventCloseMenu = new Event('closeMenu');
     var eventEndFullscreen = new Event('endfullscreen');
     var eventTimeUpdate = new Event('dataupdate');
     
@@ -70,6 +71,7 @@ $(document).ready(function () {
         else if (type == "ping-pong") {
             launchPingPongGame(windowId, true);
         }
+        menu.trigger.dispatchEvent(eventCloseMenu);
     };
 
     //=============================================================================
