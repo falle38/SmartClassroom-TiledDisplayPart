@@ -69,6 +69,8 @@ orientation["NE"] = false;
 orientation["SW"] = false;
 orientation["SE"] = false;
 
+
+
 var nbWindow = 0;
 
 
@@ -83,12 +85,17 @@ nowjs.on('connect', function () {
     if(!this.now.name) {
 	
         var b = false;
+        var i, j;
         for (var o in orientation){
             if(!orientation[o]){
                 orientation[o] = this;
                 this.now.name = 'name' + key;
                 this.now.id = key;
-                var client = {"id":this.now.id, "object":this, "orientation":o};
+                if (o == "NW") { i = 0; j = 0; }
+                if (o == "NE") { i = 1; j = 0; }
+                if (o == "SW") { i = 0; j = 1; }
+                if (o == "SE") { i = 1; j = 1; }
+                var client = {"id":this.now.id, "object":this, "orientation":o, "position": {"i" : i,"j" : j}};
                 clientList[this.now.id] = client;
                 this.now.callbackConnected(client);
                 // generate a name for this new client user
@@ -184,9 +191,6 @@ everyone.now.shareMediaDisplay = function (windowId, type, title, isPlayingAudio
     //hosts[windowId] = host;
     //everyone.now.filterAskTiledDisplay(windowId, title, data);
 };
-
-
-
 
 // called from server - execute every client context, then we can do filtering
 everyone.now.filterLaunchSharedMediaDisplay = function (windowId, type, title, data) {

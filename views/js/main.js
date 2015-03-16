@@ -250,7 +250,7 @@ function createCanvas(windowId, title, width, height, type, isMaster, isShared, 
     windowDiv.getElementsByClassName('window-form')[0].appendChild(canvasToDraw);
     windowDiv.getElementsByClassName('window-form')[0].appendChild(backing_canvas);
     
-    var media = { "type": type, "isTiled": false, "isMaster": isMaster, "data": data }
+    var media = { "type": type, "isTiled": false, "isRotated":false, "isMaster": isMaster, "data": data }
     windowList[canvasToDraw.id] = media;
     
     if (type == "video") {
@@ -573,11 +573,13 @@ function fullWindow(canvas) {
     
     if (!fullWindowState) {
         fullWindowState = true;
+        fullscreenCanvasRotated = false;
         var windowId = canvas.id.split('canvas')[1];
         var isMaster = windowList[canvas.id].isMaster;
         
         // Canvas goes full window
         var canvasToDraw = document.getElementById('canvasFullscreen');
+        var backing = document.getElementById('backing_' + canvas.id);
         //var divFullscreen = document.getElementById('divFullscreen');")
         launchFullScreen(document.documentElement);
         
@@ -585,15 +587,15 @@ function fullWindow(canvas) {
         saveTop = canvas.parentElement.parentElement.offsetTop;
         saveWidth = canvas.width;
         saveHeight = canvas.height;
-        saveDisplay = canvas.style.display;
+        saveDisplay = canvas.parentElement.parentElement.style.display;
         
         canvasToDraw.width = window.innerWidth;
         canvasToDraw.height = window.innerHeight;
-        canvasToDraw.style.display = "block";
+        canvasToDraw.style.display = "inline";
         
-        canvas.style.display = "none";
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        canvas.parentElement.parentElement.style.display = "none";
+        //canvas.width = window.innerWidth;
+        //canvas.height = window.innerHeight;
         
         if (windowList[canvas.id].type == "video") {
             var videoControls = createVideoControls(windowId, true, isMaster);
@@ -707,25 +709,34 @@ function fullWindow(canvas) {
         
         var fullscreenButton = document.getElementById('close-fullscreen');
         var draw = canvasToDraw.getContext('2d');
-
-        window.addEventListener('resize', function (e) {
-            
+      
+      
+        
+        var resize = function (e) {
+            //canvas.width = window.innerWidth;
+            //canvas.height = window.innerHeight;
             canvasToDraw.width = window.innerWidth;
             canvasToDraw.height = window.innerHeight;
-            draw.drawImage(canvas, 0, 0, canvasToDraw.width, canvasToDraw.height);
-        }, false);
+            draw.drawImage(backing, 0, 0, canvasToDraw.width, canvasToDraw.height);
+        }
+        window.addEventListener('resize', resize, false);
         
         var listener = function (e) {
-            draw.drawImage(canvas, 0, 0, canvasToDraw.width, canvasToDraw.height);
+            if (windowList[canvas.id].isRotated && !fullscreenCanvasRotated) {
+                draw.translate(canvasToDraw.width, canvasToDraw.height);
+                draw.rotate(180 * (Math.PI / 180));
+                fullscreenCanvasRotated = true;
+            }
+            draw.drawImage(backing, 0, 0, canvasToDraw.width, canvasToDraw.height);
         }
         
         var endFullscreen = function (e) {
             cancelFullScreen(document.documentElement);
-            canvas.width = saveWidth;
-            canvas.height = saveHeight;
+            //canvas.width = saveWidth;
+            //canvas.height = saveHeight;
             canvas.parentElement.parentElement.style.top = saveTop + "px";
             canvas.parentElement.parentElement.style.left = saveLeft + "px";
-            canvas.style.display = saveDisplay;
+            canvas.parentElement.parentElement.style.display = saveDisplay;
             reloadCanvas(canvas)
             
             
@@ -852,7 +863,7 @@ function initializeEventListener() {
             askRemoteGameControl(windowId, "ping-pong", "tiled-display", "", "all");
         }
         else {
-            askRemoteMediaControl(windowId, windowList["canvas" + windowId].type, "tiled-display", "", "all");
+            askRemoteMediaControl(windowId, windowList["canvas" + windowId].type, "tiled-display", infos.position, "all");
         }
     });
     

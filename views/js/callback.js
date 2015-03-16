@@ -1,10 +1,8 @@
 
 
     var infos;
-    
-    
     var audioplayer;
-var menu;
+    var menu;
 
 $(document).ready(function () {
     var event = new Event('draw');
@@ -250,7 +248,7 @@ $(document).ready(function () {
         var window = getWindow(windowId);
         var canvasToDraw = document.getElementById("canvas" + windowId);
         var draw = canvasToDraw.getContext('2d');
-        
+        var rotated = false;
         // create a blank HTML image, put the data into the image src
         var img = new Image();
         img.src = image;
@@ -258,11 +256,12 @@ $(document).ready(function () {
         // when the image loaded, draw the image on HTML5 canvas
         img.addEventListener("load", function () {
             var isTiled = windowList[canvasToDraw.id].isTiled;
-            
-            var canvas = document.getElementById("backing_" + canvasToDraw.id);
-            canvas.width = img.width;
-            canvas.height = img.height;
-            var context = canvas.getContext('2d');
+            var masterPosition = windowList[canvasToDraw.id].data.masterPosition;
+
+            var backing_canvas = document.getElementById("backing_" + canvasToDraw.id);
+            backing_canvas.width = img.width;
+            backing_canvas.height = img.height;
+            var context = backing_canvas.getContext('2d');
             
             var rows = 2;
             var cols = 2;
@@ -271,27 +270,61 @@ $(document).ready(function () {
             var tileWidth = img.width;
             var tileHeight = img.height;
             
-            //If picture have to be tiled
+            var orientation;
+            //If picture has to be tiled
             if (isTiled) {
                 tileWidth = Math.round(img.width / cols);
                 tileHeight = Math.round(img.height / rows);
                 var tileCenterX = tileWidth / 2;
                 var tileCenterY = tileHeight / 2;
                 
-                if (infos.orientation == "NE") {
-                    tileX = tileX + tileWidth;
+                //if (infos.orientation == "NE") {
+                //    tileX = tileX + tileWidth;
+                //}
+                //else if (infos.orientation == "SW") {
+                //    tileY = tileY + tileHeight;
+                //}
+                //else if (infos.orientation == "SE") {
+                //    tileX = tileX + tileWidth;
+                //    tileY = tileY + tileHeight;
+                //}
+
+                var i, j;
+                if (masterPosition.j > ((rows/2) - 1)) {
+                    //SENS CARTESIEN NORMALE
+                    i = infos.position.i;
+                    j = infos.position.j;
                 }
-                else if (infos.orientation == "SW") {
-                    tileY = tileY + tileHeight;
+                else {
+                    //SENS CARTESIEN INVERSEE
+                    //(NBTOTAL - 1) - COORDONNEE
+                    i = (cols - 1) - infos.position.i;
+                    j = (rows - 1) - infos.position.j;
                 }
-                else if (infos.orientation == "SE") {
-                    tileX = tileX + tileWidth;
-                    tileY = tileY + tileHeight;
+                tileX = tileX + i * tileWidth;
+                tileY = tileY + j * tileHeight;
+                if (j <= ((rows / 2) - 1)) {
+                    if (!windowList[canvasToDraw.id].isRotated) {
+                        console.log("ROTATED CS")
+                        draw.translate(canvasToDraw.width, canvasToDraw.height);
+                        draw.rotate(180 * (Math.PI / 180));
+                        windowList[canvasToDraw.id].isRotated = true;
+                    }
+                }
+            }
+            else {
+                if (windowList[canvasToDraw.id].isRotated) {
+                    console.log("ROTATED CS")
+                    draw.translate(canvasToDraw.width, canvasToDraw.height);
+                    draw.rotate(180 * (Math.PI / 180));
+                    windowList[canvasToDraw.id].isRotated = false;
                 }
             }
             
+            
+            
             context.drawImage(img, tileX, tileY, tileWidth, tileHeight, 0, 0, img.width, img.height);
-            draw.drawImage(canvas, 0, 0, canvasToDraw.width, canvasToDraw.height);
+            draw.drawImage(backing_canvas, 0, 0, canvasToDraw.width, canvasToDraw.height);
             canvasToDraw.dispatchEvent(event);
 
             //draw.drawImage(img, tileX, tileY, tileWidth, tileHeight, 0, 0, img.width, img.height);
@@ -314,6 +347,7 @@ $(document).ready(function () {
         if (mediaType == "video") {
             if (controlType == "tiled-display") {
                 var canvas = document.getElementById("canvas" + windowId);
+                windowList[canvas.id].data.masterPosition = value;
                 windowList[canvas.id].isTiled = true;
                 fullWindow(canvas);
             }

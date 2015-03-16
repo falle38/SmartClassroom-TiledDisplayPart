@@ -14,7 +14,7 @@ function loadVideoTiledDisplay(windowId, url) {
     console.log(video)
     video.addEventListener('loadedmetadata', function () {
         //var canvas = createCanvas(windowId, "VIDEO", this.videoWidth, this.videoHeight);
-       var data = { "duration": video.duration, "currentTime": video.currentTime, "paused": video.paused };
+       var data = { "masterPosition": infos.position, "duration": video.duration, "currentTime": video.currentTime, "paused": video.paused };
        var canvas = createCanvas(windowId, "VIDEO", 400, 300,"video",true, true, data);
        var ctx = canvas.getContext('2d');
        ctx.drawImage(this, 0, 0, this.videoWidth, this.videoHeight);
@@ -36,7 +36,7 @@ function loadInputFile(div) {
 function loadPdf(windowId, url) {
     PDFJS.getDocument('/static/helloworld.pdf').then(function (pdf) {
         //PDFJS.disableWorker = true;
-        var data = { "pdf": pdf, "currentPosition": 1, "total": pdf.numPages};
+        var data = { "masterPosition":infos.position, "pdf": pdf, "currentPosition": 1, "total": pdf.numPages};
         var canvasToDraw = createCanvas(windowId, "PDF", 400, 300, "pdf", true, true, data);
         //We send data to clients without the pdf object
         data = { "currentPosition": 1, "total": pdf.numPages };
