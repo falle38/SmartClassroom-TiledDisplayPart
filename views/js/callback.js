@@ -9,7 +9,7 @@ $(document).ready(function () {
     var eventCloseMenu = new Event('closeMenu');
     var eventEndFullscreen = new Event('endfullscreen');
     var eventTimeUpdate = new Event('dataupdate');
-    
+    var isRotating = false;
     
     //=============================================================================
     // CALLBACK WHEN CLIENT IS CONNECTED TO SERVER
@@ -73,103 +73,97 @@ $(document).ready(function () {
     };
 
     //=============================================================================
-    // SHARE AND UPDATE WINDOW DATA : (POSITION, CSS ETC...)
+    // SHARE AND UPDATE WINDOW DATA : (POSITION, ROTATION, CSS ETC...)
     //=============================================================================
     
     createSharedWindow = function (windowId, title, type) {
-        createCanvas(windowId, "SHARED TEST", 400, 300, "shared", false, true);
+        var canvas = createCanvas(windowId, "SHARED TEST", 400, 300, "shared", false, true);
+        var rows = 2;
+        if (infos.position.j <= ((rows / 2) - 1)) {
+            if (!windowList[canvas.id].isRotated) {
+                windowRotation(windowId, 180);
+            }
+        }
     };
     
     // called from server - to update the image data just for this client page
     // the data is a base64-encoded image
-    updateWindowPosition = function (windowId, orientationRemoteClient, top, left, hostWidth, hostHeight) {
+    updateWindowPosition = function (windowId, positionRemoteClient, top, left, hostWidth, hostHeight) {
         var window = getWindow(windowId);
-        window.style.removeProperty('-webkit-transition');
-        window.style.removeProperty('transition');
+        if (!isRotating) {
+            window.style.removeProperty('-webkit-transition');
+            window.style.removeProperty('transition');
+        }
         
         var width = $('div.display').width();
         var height = $('div.display').height();
+        var windowWidth = $('#window' + windowId).width();
+        var windowHeight = $('#window' + windowId).height();
         //Adapt the scale if the host has a different height and width of display
-        console.log(hostWidth + "/" + hostHeight)
-        left = (left * width) / hostWidth;
-        top = (top * height) / hostHeight;
+        //left = (left * width) / hostWidth;
+        //top = (top * height) / hostHeight;
+        var rows = 2;
+        var i = infos.position.i;
+        var j = infos.position.j;
+        var x, y;
+        if (positionRemoteClient.j <= ((rows / 2) - 1)) {
+            //Si les tables sont de sens opposés, on adapte la position de la fenêtre
+            if (j <= ((rows / 2) - 1)) {
+                left = width - left;
+                top = height - top;
+            }
+            else {
+                left = (width - left) - windowWidth;
+                top = (height - top) - windowHeight;
+            }
+        }
+        x = positionRemoteClient.i * width + left;
+        y = positionRemoteClient.j * height + top;
         
-        if (infos.orientation == "NW") {
-            if (orientationRemoteClient == "NE") {
-                left = left + width;
-                window.style.top = top + "px";
-                window.style.left = left + "px";
-            }
-            else if (orientationRemoteClient == "SW") {
-                top = top + height;
-                window.style.top = top + "px";
-                window.style.left = left + "px";
-            }
-            else if (orientationRemoteClient == "SE") {
-                left = left + width;
-                top = top + height;
-                window.style.top = top + "px";
-                window.style.left = left + "px";
-            }  
-        }
-        else if (infos.orientation == "NE") {
-            if (orientationRemoteClient == "NW") {
-                left = left - width;
-                window.style.top = top + "px";
-                window.style.left = left + "px";
-            }
-            else if (orientationRemoteClient == "SW") {
-                left = left - width;
-                top = top + height;
-                window.style.top = top + "px";
-                window.style.left = left + "px";
-            }
-            else if (orientationRemoteClient == "SE") {
-                top = top + height;
-                window.style.top = top + "px";
-                window.style.left = left + "px";
-            }
-        }
-        else if (infos.orientation == "SW") {
-            if (orientationRemoteClient == "NE") {
-                left = left + width;
-                top = top - height;
-                window.style.top = top + "px";
-                window.style.left = left + "px";
-            }
-            else if (orientationRemoteClient == "NW") {
-                top = top - height;
-                window.style.top = top + "px";
-                window.style.left = left + "px";
-            }
-            else if (orientationRemoteClient == "SE") {
-                left = left + width;
-                window.style.top = top + "px";
-                window.style.left = left + "px";
-            }
-        }
-        else if (infos.orientation == "SE") {
-            if (orientationRemoteClient == "NW") {
-                left = left - width;
-                top = top - height;
-                window.style.top = top + "px";
-                window.style.left = left + "px";
-            }
-            else if (orientationRemoteClient == "NE") {
-                top = top - height;
-                window.style.top = top + "px";
-                window.style.left = left + "px";
-            }
-            else if (orientationRemoteClient == "SW") {
-                left = left - width;
-                window.style.top = top + "px";
-                window.style.left = left + "px";
-            }
-        }
         
-              
+        left = x - i * width;
+        top = y - j * height;
+
+        if (j <= ((rows / 2) - 1)) {
+            //Si les tables sont de sens opposés, on adapte la position de la fenêtre
+            if (positionRemoteClient.j > ((rows / 2) - 1)) {
+                left = (width - left) - windowWidth;
+                top = (height - top) - windowHeight;
+            }
+            else {
+                left = width - left;
+                top = height - top;
+            }
+        }
+        window.style.top = top + "px";
+        window.style.left = left + "px";
+        
+        //If the window is on the display
+        //if (left >= 0 && left <= width && top >= 0 && top <= height && (left + windowWidth) >= 0 && (left + windowWidth) <= width && (top + windowHeight) >= 0 && (top + windowHeight) <= height) {
+        if (left >= (0 + 20) && left <= (width - 20) && top >= (0 + 20) && top <= (height - 20) && (left + windowWidth) >= (0 + 20) && (left + windowWidth) <= (width - 20) && (top + windowHeight) >= (0 + 20) && (top + windowHeight) <= (height - 20)) {
+            if (windowList["canvas" + windowId].isRotated) {
+                console.log("DO ROTATION")
+                askWindowRotation(windowId, 180);
+            }
+        }
     };
     
+    // called from server - to update the image data just for this client page
+    // the data is a base64-encoded image
+    windowRotation = function (windowId, degree) {
+        var window = getWindow(windowId);
+        var angle = windowList["canvas" + windowId].angle + degree;
+        windowList["canvas" + windowId].angle = angle;
+        isRotating = true;
+        setTimeout(function () { isRotating = false;}, 1000);
+        window.style.WebkitTransitionDuration = '1s';
+        window.style.webkitTransform = 'rotate(' + angle + 'deg)';
+        windowList["canvas" + windowId].isRotated = !windowList["canvas" + windowId].isRotated;
+        
+
+
+    };
+
     //=============================================================================
     // SHARE MEDIA WINDOW : (VIDEO, PDF, APPS ETC...)
     //=============================================================================

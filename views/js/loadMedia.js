@@ -106,7 +106,13 @@ function loadPdfPage(windowId, index) {
 
 
 function loadSharedWindow(windowId) {
-    var canvasToDraw = createCanvas(windowId, "SHARED MAIN", 400, 300, "shared", true, true);
+    var canvas = createCanvas(windowId, "SHARED MAIN", 400, 300, "shared", true, true);
+    var rows = 2;
+    if (infos.position.j <= ((rows / 2) - 1)) {
+        if (!windowList[canvas.id].isRotated) {
+            windowRotation(windowId, 180);
+        }
+    }
     shareWindow(windowId, "SHARED TEST", "shared");
     
 }

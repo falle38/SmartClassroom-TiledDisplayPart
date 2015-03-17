@@ -98,7 +98,7 @@ function addWindow(windowId, title, width, height, type, isShared) {
                 var width = $('div.display').width();
                 var height = $('div.display').height();
                 if (isShared) {
-                    now.shareWindowPosition(windowId, infos.orientation, obj.$el.context.offsetTop, obj.$el.context.offsetLeft, width, height);
+                    now.shareWindowPosition(windowId, infos.position, obj.$el.context.offsetTop, obj.$el.context.offsetLeft, width, height);
                     //if (isRotated) {
                     //    now.shareWindowPosition(windowId, infos.orientation, height - obj.$el.context.offsetTop, width - obj.$el.context.offsetLeft, width, height);
                         
@@ -114,7 +114,7 @@ function addWindow(windowId, title, width, height, type, isShared) {
                 var height = $('div.display').height();
                                
                 if (isShared) {
-                    now.shareWindowPosition(windowId, infos.orientation, obj.$el.context.offsetTop, obj.$el.context.offsetLeft, width, height);
+                    now.shareWindowPosition(windowId, infos.position, obj.$el.context.offsetTop, obj.$el.context.offsetLeft, width, height);
                     //if (isRotated) {
                     //    now.shareWindowPosition(windowId, infos.orientation, height - obj.$el.context.offsetTop, width - obj.$el.context.offsetLeft, width, height);
                         
@@ -156,7 +156,7 @@ function addWindow(windowId, title, width, height, type, isShared) {
                 var width = $('div.display').width();
                 var height = $('div.display').height();
                 if (isShared) {
-                    now.shareWindowPosition(windowId, infos.orientation, obj.$el.context.offsetTop, obj.$el.context.offsetLeft, width, height);
+                    now.shareWindowPosition(windowId, infos.position, obj.$el.context.offsetTop, obj.$el.context.offsetLeft, width, height);
                     //if (isRotated) {
                     //    now.shareWindowPosition(windowId, infos.orientation, height - obj.$el.context.offsetTop, width - obj.$el.context.offsetLeft, width, height);
                         
@@ -172,7 +172,7 @@ function addWindow(windowId, title, width, height, type, isShared) {
                 var height = $('div.display').height();
                 
                 if (isShared) {
-                    now.shareWindowPosition(windowId, infos.orientation, obj.$el.context.offsetTop, obj.$el.context.offsetLeft, width, height);
+                    now.shareWindowPosition(windowId, infos.position, obj.$el.context.offsetTop, obj.$el.context.offsetLeft, width, height);
                     //if (isRotated) {
                     //    now.shareWindowPosition(windowId, infos.orientation, height - obj.$el.context.offsetTop, width - obj.$el.context.offsetLeft, width, height);
                         
@@ -250,7 +250,7 @@ function createCanvas(windowId, title, width, height, type, isMaster, isShared, 
     windowDiv.getElementsByClassName('window-form')[0].appendChild(canvasToDraw);
     windowDiv.getElementsByClassName('window-form')[0].appendChild(backing_canvas);
     
-    var media = { "type": type, "isTiled": false, "isRotated":false, "isMaster": isMaster, "data": data }
+    var media = { "type": type, "isTiled": false, "isRotated":false, "angle":0, "isMaster": isMaster, "data": data }
     windowList[canvasToDraw.id] = media;
     
     if (type == "video") {

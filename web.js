@@ -139,7 +139,7 @@ everyone.now.getWindowId = function (type, url) {
 };
 
 //=============================================================================
-// SHARE AND UPDATE WINDOW DATA : (POSITION, CSS ETC...)
+// SHARE AND UPDATE WINDOW DATA : (POSITION, ROTATION, CSS ETC...)
 //=============================================================================
 
 // called from client - just execute one client context (host)
@@ -169,6 +169,13 @@ everyone.now.filterShareWindowPosition = function (windowId, orientation, top, l
     this.now.updateWindowPosition(windowId, orientation, top, left, hostWidth, hostHeight);
 
 };
+
+// called from client - just execute one client context (host)
+everyone.now.askWindowRotation = function (windowId, degree) {
+    // update the data to the other clients other than host
+    everyone.now.windowRotation(windowId, degree);
+};
+
 
 //=============================================================================
 // SHARE MEDIA WINDOW : (VIDEO, PDF, APPS ETC...)
