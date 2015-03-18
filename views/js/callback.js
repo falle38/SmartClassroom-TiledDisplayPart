@@ -141,7 +141,7 @@ $(document).ready(function () {
         //If the window is on the display
         //if (left >= 0 && left <= width && top >= 0 && top <= height && (left + windowWidth) >= 0 && (left + windowWidth) <= width && (top + windowHeight) >= 0 && (top + windowHeight) <= height) {
         if (left >= (0 + 20) && left <= (width - 20) && top >= (0 + 20) && top <= (height - 20) && (left + windowWidth) >= (0 + 20) && (left + windowWidth) <= (width - 20) && (top + windowHeight) >= (0 + 20) && (top + windowHeight) <= (height - 20)) {
-            if (windowList["canvas" + windowId].isRotated) {
+            if (windowList["canvas" + windowId].isRotated &&  !isRotating) {
                 console.log("DO ROTATION")
                 askWindowRotation(windowId, 180);
             }
@@ -170,11 +170,19 @@ $(document).ready(function () {
     
     launchSharedMediaDisplay = function (windowId, type, title, data) {
         console.log("LAUNCHING");
+        rows = 2;
         if (type == "ping-pong") {
             launchPingPongGame(windowId, false);
         }
         else {
             createCanvas(windowId, title, 400, 300, type, false, true, data);
+        }
+        
+        if (data.masterPosition.j <= ((rows / 2) - 1) && infos.position.j > ((rows / 2) - 1) ) {
+                windowRotation(windowId, 180);
+        }
+        else if (data.masterPosition.j > ((rows / 2) - 1) && infos.position.j <= ((rows / 2) - 1)) {
+                windowRotation(windowId, 180);
         }
         // initializeAudioplayer(now.id, windowId);
         ReadyToReceiveMedia(windowId, type);
@@ -300,8 +308,8 @@ $(document).ready(function () {
                 if (j <= ((rows / 2) - 1)) {
                     if (!windowList[canvasToDraw.id].isRotated) {
                         console.log("ROTATED CS")
-                        draw.translate(canvasToDraw.width, canvasToDraw.height);
-                        draw.rotate(180 * (Math.PI / 180));
+                        //draw.translate(canvasToDraw.width, canvasToDraw.height);
+                        //draw.rotate(180 * (Math.PI / 180));
                         windowList[canvasToDraw.id].isRotated = true;
                     }
                 }
@@ -309,8 +317,8 @@ $(document).ready(function () {
             else {
                 if (windowList[canvasToDraw.id].isRotated) {
                     console.log("ROTATED CS")
-                    draw.translate(canvasToDraw.width, canvasToDraw.height);
-                    draw.rotate(180 * (Math.PI / 180));
+                    //draw.translate(canvasToDraw.width, canvasToDraw.height);
+                    //draw.rotate(180 * (Math.PI / 180));
                     windowList[canvasToDraw.id].isRotated = false;
                 }
             }

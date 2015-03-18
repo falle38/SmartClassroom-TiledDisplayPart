@@ -57,6 +57,9 @@
     droppableActiveClass:           'pep-dpa',
     overlapFunction:                false,
     constrainTo:                    false,
+    tablePosition:                  false,
+    maxPosition:                    false,
+    orientation :                   false,
     removeMargins:                  true,
     place:                          true,
     deferPlacement:                 false,
@@ -858,30 +861,60 @@
       if ( this.pos.x + dx < lowerXLimit)     hash.x = lowerXLimit;
       if ( this.pos.y + dy < lowerYLimit)     hash.y = lowerYLimit;
 
-    } else if ( typeof this.options.constrainTo === 'string' ) {
-      lowerXLimit       = 0;
-      lowerYLimit       = 0;
-      upperXLimit       = this.$container.width()  - this.$el.outerWidth();
-      upperYLimit       = this.$container.height() - this.$el.outerHeight();
+        } else if (typeof this.options.constrainTo === 'string') {
+                
+        lowerXLimit = -1000000;
+        lowerYLimit = -1000000;
+        upperXLimit = 1000000;
+        upperYLimit = 1000000;     
+            
+        if (this.options.tablePosition.i == 0) {
+            upperXLimit = 0;
+            if (this.options.orientation == 'reversed') {
+                upperXLimit = this.$container.width() - this.$el.outerWidth();
+            }
+        }
+        if (this.options.tablePosition.j == 0) {
+            upperYLimit = 0;
+            if (this.options.orientation == 'reversed') {
+                upperYLimit = this.$container.height() - this.$el.outerHeight();
+            } 
+        }
+        if (this.options.tablePosition.i == this.options.maxPosition.i) {
+                upperXLimit = this.$container.width() - this.$el.outerWidth();
+        }
+        if (this.options.tablePosition.j == this.options.maxPosition.j) {
+                upperYLimit = this.$container.height() - this.$el.outerHeight();
+        }
+
 
       // is our object trying to move outside lower X & Y limits?
-      if ( this.pos.x + dx < 0 )              hash.x = 0;
-      if ( this.pos.y + dy < 0 )              hash.y = 0;
+      if ( this.pos.x + dx < lowerXLimit )              hash.x = 0;
+      if ( this.pos.y + dy < lowerYLimit )              hash.y = 0;
     }
 
-    // is our object trying to move outside upper X & Y limits?
-    if ( this.pos.x + dx > upperXLimit )    hash.x = upperXLimit;
-    if ( this.pos.y + dy > upperYLimit )    hash.y = upperYLimit;
+        // is our object trying to move outside upper X & Y limits?
+
+        if (this.pos.x + dx > upperXLimit) {
+            hash.x = upperXLimit;
+
+        }
+        if (this.pos.y + dy > upperYLimit) {
+            hash.y = upperYLimit;
+        }
+        
+    
 
     // Account for translation, which makes movement a little tricky.
     if ( this.shouldUseCSSTranslation() && accountForTranslation ){
       if (hash.x === lowerXLimit && this.xTranslation() ) hash.x = lowerXLimit - this.xTranslation();
-      if (hash.x === upperXLimit && this.xTranslation() ) hash.x = upperXLimit - this.xTranslation();
+      if (hash.x === upperXLimit && this.xTranslation()) hash.x = upperXLimit - this.xTranslation();
+      
 
       if (hash.y === lowerYLimit && this.yTranslation() ) hash.y = lowerYLimit - this.yTranslation();
-      if (hash.y === upperYLimit && this.yTranslation() ) hash.y = upperYLimit - this.yTranslation();
-    }
-
+      if (hash.y === upperYLimit && this.yTranslation()) hash.y = upperYLimit - this.yTranslation();
+      
+        }     
     return hash;
   };
 

@@ -83,9 +83,17 @@ function addWindow(windowId, title, width, height, type, isShared) {
     display.appendChild(windowDiv);
     
     //MANAGE DRAG AND DROP FOR MOUSE
-    $("#window-header" + windowId).mousedown(function (e) {            
+    $("#window-header" + windowId).mousedown(function (e) {
+        var orientation = 'normal'
+        var rows = 2;
+        if (infos.position.j <= ((rows / 2) - 1)) { 
+            orientation = 'reversed'
+        }           
         $("#" + e.currentTarget.parentElement.id).pep({
-            // constrainTo: 'parent',
+            constrainTo: 'parent',
+            tablePosition: infos.position,
+            maxPosition: { "i": (2 - 1), "j": (2 - 1) },
+            orientation: orientation,
             rotation : isRotated,
             start: function (ev, obj) {
                 if (notHead) {
