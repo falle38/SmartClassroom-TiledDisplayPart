@@ -6,8 +6,8 @@ var fullWindowState;
 //SAVE CANVAS DATA (display state, media data etc...)
 var windowList = new Object();
 var isRotated = false;
-
-
+var minScale = 0.1;
+var maxScale = 2;
 //=================================================================================
 // MANAGE DISPLAY DIV : (Rotation etc...)
 //=================================================================================
@@ -48,6 +48,11 @@ function addWindow(windowId, title, width, height, type, isShared) {
     iconTiled.className = 'icon-tiled';
     iconTiled.innerHTML = "T";
     
+    //CREATE TILED DISPLAY ICON
+    var iconRotation = document.createElement('label');
+    iconRotation.className = 'icon-rotation';
+    iconRotation.innerHTML = "R";
+    
     //CREATE CLOSE ICON
     var iconClose = document.createElement('label');
     iconClose.className = 'icon-close';
@@ -62,7 +67,9 @@ function addWindow(windowId, title, width, height, type, isShared) {
     toolbar.className = 'toolbar-header';
     toolbar.appendChild(iconFullscreen);
     toolbar.appendChild(iconTiled);
+    
     toolbar.appendChild(iconClose);
+    toolbar.appendChild(iconRotation);
     
     //ADD TOOLBAR AND TITLE INTO WINDOW HEADER
     windowHeader.appendChild(toolbar);
@@ -78,7 +85,7 @@ function addWindow(windowId, title, width, height, type, isShared) {
     windowDiv.appendChild(windowHeader);
     windowDiv.appendChild(windowFormDiv);
     
-   // ADD WINDOW INTO AREA
+    // ADD WINDOW INTO AREA
     var display = document.getElementsByClassName("display")[0];
     display.appendChild(windowDiv);
     
@@ -86,9 +93,9 @@ function addWindow(windowId, title, width, height, type, isShared) {
     $("#window-header" + windowId).mousedown(function (e) {
         var orientation = 'normal'
         var rows = 2;
-        if (infos.position.j <= ((rows / 2) - 1)) { 
+        if (infos.position.j <= ((rows / 2) - 1)) {
             orientation = 'reversed'
-        }           
+        }
         $("#" + e.currentTarget.parentElement.id).pep({
             constrainTo: 'parent',
             tablePosition: infos.position,
@@ -102,7 +109,7 @@ function addWindow(windowId, title, width, height, type, isShared) {
                 //obj.$el.css({ background : 'red'});
             },
             drag: function (ev, obj) {
-   
+                
                 var width = $('div.display').width();
                 var height = $('div.display').height();
                 if (isShared) {
@@ -120,7 +127,7 @@ function addWindow(windowId, title, width, height, type, isShared) {
             easing: function (ev, obj) {
                 var width = $('div.display').width();
                 var height = $('div.display').height();
-                               
+                
                 if (isShared) {
                     now.shareWindowPosition(windowId, infos.position, obj.$el.context.offsetTop, obj.$el.context.offsetLeft, width, height);
                     //if (isRotated) {
@@ -201,6 +208,21 @@ function addWindow(windowId, title, width, height, type, isShared) {
                 $.pep.unbind($("#" + e.currentTarget.parentElement.id));
             }
         });
+        
+        var scale = 1;
+        var angle = 0;
+        
+        interact(windowDiv).gesturable({
+            onmove: function (event) {
+                
+                windowDiv.style.removeProperty('-webkit-transition');
+                windowDiv.style.removeProperty('transition');
+                scale = scale * (1 + event.ds);
+                windowDiv.style.webkitTransform = windowDiv.style.transform = 'scale(' + scale + ')';
+                angle += event.da;
+                windowDiv.style.webkitTransform = windowDiv.style.transform = windowDiv.style.transform + ' rotate(' + angle + 'deg)';
+            }
+        });
     });
     return windowDiv;
 }
@@ -258,7 +280,7 @@ function createCanvas(windowId, title, width, height, type, isMaster, isShared, 
     windowDiv.getElementsByClassName('window-form')[0].appendChild(canvasToDraw);
     windowDiv.getElementsByClassName('window-form')[0].appendChild(backing_canvas);
     
-    var media = { "type": type, "isTiled": false, "isRotated":false, "angle":0, "isMaster": isMaster, "data": data }
+    var media = { "type": type, "isTiled": false, "isRotated": false, "angle": 0, "isMaster": isMaster, "data": data }
     windowList[canvasToDraw.id] = media;
     
     if (type == "video") {
@@ -322,6 +344,10 @@ function reloadCanvas(canvas) {
     var backing_canvas = document.getElementById("backing_" + canvas.id);
     var draw = canvas.getContext('2d');
     draw.drawImage(backing_canvas, 0, 0, canvas.width, canvas.height);
+}
+
+function activateCanvasRotation(canvas) {
+
 }
 
 //=============================================================================
@@ -717,8 +743,8 @@ function fullWindow(canvas) {
         
         var fullscreenButton = document.getElementById('close-fullscreen');
         var draw = canvasToDraw.getContext('2d');
-      
-      
+        
+        
         
         var resize = function (e) {
             //canvas.width = window.innerWidth;
@@ -846,7 +872,8 @@ function initializeEventListener() {
         rotateDisplayDiv();
     });
     
-    $(".display").on("touchstart mousedown", "label.icon-close", function (e) {
+    $(".display").on("touchstart click", "label.icon-close", function (e) {
+        console.log("TAP")
         e.preventDefault();
         e.currentTarget.parentElement.parentElement.parentElement.parentElement.removeChild(e.currentTarget.parentElement.parentElement.parentElement);
     });
@@ -873,6 +900,11 @@ function initializeEventListener() {
         else {
             askRemoteMediaControl(windowId, windowList["canvas" + windowId].type, "tiled-display", infos.position, "all");
         }
+    });
+    
+    $(".display").on("touchstart mousedown", "label.icon-rotation", function (e) {
+        e.preventDefault();
+        
     });
     
     $(".display").on("touchmove", function (e) {
