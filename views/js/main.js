@@ -266,22 +266,22 @@ function initializeAudioplayer(id, windowId) {
 //=============================================================================
 
 function createCanvas(windowId, title, width, height, type, isMaster, isShared, data) {
-    var canvasToDraw = document.createElement('canvas');
-    canvasToDraw.id = 'canvas' + windowId;
-    canvasToDraw.width = width;
-    canvasToDraw.height = height;
+    var canvas = document.createElement('canvas');
+    canvas.id = 'canvas' + windowId;
+    canvas.width = width;
+    canvas.height = height;
     
     var backing_canvas = document.createElement("canvas");
-    backing_canvas.id = "backing_" + canvasToDraw.id;
+    backing_canvas.id = "backing_" + canvas.id;
     backing_canvas.style.display = "none";
     
     //var windowDiv = addWindow(windowId, title, width + 10, height + 5, type);
     var windowDiv = addWindow(windowId, title, width, height, type, isShared);
-    windowDiv.getElementsByClassName('window-form')[0].appendChild(canvasToDraw);
+    windowDiv.getElementsByClassName('window-form')[0].appendChild(canvas);
     windowDiv.getElementsByClassName('window-form')[0].appendChild(backing_canvas);
     
     var media = { "type": type, "isTiled": false, "isRotated": false, "angle": 0, "isMaster": isMaster, "data": data }
-    windowList[canvasToDraw.id] = media;
+    windowList[windowId] = media;
     
     if (type == "video") {
         var videoControls = createVideoControls(windowId, false, isMaster);
@@ -298,7 +298,7 @@ function createCanvas(windowId, title, width, height, type, isMaster, isShared, 
             }, 2500);
         });
         
-        $("#" + canvasToDraw.id).mousemove(function (e) {
+        $("#" + canvas.id).mousemove(function (e) {
             $("#" + videoControls.id).slideDown(200);
             
             if (timeoutIdentifier) {
@@ -325,7 +325,7 @@ function createCanvas(windowId, title, width, height, type, isMaster, isShared, 
             }, 2500);
         });
         
-        $("#" + canvasToDraw.id).mousemove(function (e) {
+        $("#" + canvas.id).mousemove(function (e) {
             $("#" + pdfControls.id).slideDown(200);
             
             if (timeoutIdentifier) {
@@ -337,7 +337,7 @@ function createCanvas(windowId, title, width, height, type, isMaster, isShared, 
         });
     
     }
-    return canvasToDraw;
+    return canvas;
 };
 
 function reloadCanvas(canvas) {
@@ -356,7 +356,7 @@ function activateCanvasRotation(canvas) {
 
 function createVideoControls(windowId, isFullscreen, isMaster) {
     if (isFullscreen) {
-        var ID = "-fullscreen";
+        var ID = 0;
     }
     else {
         var ID = windowId;
@@ -371,7 +371,7 @@ function createVideoControls(windowId, isFullscreen, isMaster) {
         var video = document.getElementById("video" + windowId);
     }
     else {
-        var video = windowList[canvas.id].data;
+        var video = windowList[windowId].data;
     }
     
     var current_time = document.createElement('div');
@@ -441,7 +441,7 @@ function createVideoControls(windowId, isFullscreen, isMaster) {
     seekBar.addEventListener('input', function () {
         if (isMaster) {
             video.currentTime = (this.value * video.duration) / 100;
-            document.getElementById('video-currentTime' + ID).innerHTML = (Math.round(video.currentTime) % 60) + ":" + Math.round(video.currentTime / 60).toString().replace(/^(\d)$/, '0$1');
+            //document.getElementById('video-currentTime' + ID).innerHTML = (Math.round(video.currentTime) % 60) + ":" + Math.round(video.currentTime / 60).toString().replace(/^(\d)$/, '0$1');
         }
         else {
             askRemoteMediaControl(windowId, "video", "seekbar", this.value, "master");
@@ -494,7 +494,7 @@ function createVideoControls(windowId, isFullscreen, isMaster) {
 
 function createPdfControls(windowId, isFullscreen, isMaster) {
     if (isFullscreen) {
-        var ID = "-fullscreen";
+        var ID = 0;
     }
     else {
         var ID = windowId;
@@ -505,7 +505,7 @@ function createPdfControls(windowId, isFullscreen, isMaster) {
     toolbar.style.display = "none";
     
     var canvas = document.getElementById("canvas" + windowId);
-    var data = windowList[canvas.id].data;
+    var data = windowList[windowId].data;
     
     var previous = document.createElement('div');
     previous.className = 'previous-pdf';
@@ -609,10 +609,10 @@ function fullWindow(canvas) {
         fullWindowState = true;
         fullscreenCanvasRotated = false;
         var windowId = canvas.id.split('canvas')[1];
-        var isMaster = windowList[canvas.id].isMaster;
+        var isMaster = windowList[windowId].isMaster;
         
         // Canvas goes full window
-        var canvasToDraw = document.getElementById('canvasFullscreen');
+        var canvasFullscreen = document.getElementById('canvasFullscreen');
         var backing = document.getElementById('backing_' + canvas.id);
         //var divFullscreen = document.getElementById('divFullscreen');")
         launchFullScreen(document.documentElement);
@@ -623,15 +623,15 @@ function fullWindow(canvas) {
         saveHeight = canvas.height;
         saveDisplay = canvas.parentElement.parentElement.style.display;
         
-        canvasToDraw.width = window.innerWidth;
-        canvasToDraw.height = window.innerHeight;
-        canvasToDraw.style.display = "inline";
+        canvasFullscreen.width = window.innerWidth;
+        canvasFullscreen.height = window.innerHeight;
+        canvasFullscreen.style.display = "inline";
         
         canvas.parentElement.parentElement.style.display = "none";
         //canvas.width = window.innerWidth;
         //canvas.height = window.innerHeight;
         
-        if (windowList[canvas.id].type == "video") {
+        if (windowList[windowId].type == "video") {
             var videoControls = createVideoControls(windowId, true, isMaster);
             videoControls.style.marginTop = "-64px";
             
@@ -639,36 +639,36 @@ function fullWindow(canvas) {
                 
                 var data = { "duration": this.duration, "currentTime": this.currentTime };
                 askRemoteMediaControl(windowId, "video", "currentTime", data, "except-host");
-                var seekBar = document.getElementById('video-slider-fullscreen');
+                var seekBar = document.getElementById('video-slider0');
                 seekBar.value = ((100 * this.currentTime) / this.duration);
-                document.getElementById('video-currentTime-fullscreen').innerHTML = Math.round(this.currentTime / 60) + ":" + (Math.round(this.currentTime) % 60).toString().replace(/^(\d)$/, '0$1');
+                document.getElementById('video-currentTime0').innerHTML = Math.round(this.currentTime / 60) + ":" + (Math.round(this.currentTime) % 60).toString().replace(/^(\d)$/, '0$1');
                 
                 if (seekBar.classList.contains('fill')) {
-                    styles["-fullscreen"] = getFillStyle(seekBar);
+                    styles[0] = getFillStyle(seekBar);
                 }
                 else {
-                    styles["-fullscreen"] = '';
+                    styles[0] = '';
                 }
                 if (seekBar.classList.contains('tip')) {
-                    styles["-fullscreen"] += getTipStyle(seekBar);
+                    styles[0] += getTipStyle(seekBar);
                 }
                 s.textContent = styles.join('');
             }
             
             var listenerCanvasDataUpdate = function (e) {
-                var video = windowList[this.id].data;
-                var seekBar = document.getElementById('video-slider-fullscreen');
+                var video = windowList[windowId].data;
+                var seekBar = document.getElementById('video-slider0');
                 seekBar.value = ((100 * video.currentTime) / video.duration);
-                document.getElementById('video-currentTime-fullscreen').innerHTML = Math.round(video.currentTime / 60) + ":" + (Math.round(video.currentTime) % 60).toString().replace(/^(\d)$/, '0$1');
+                document.getElementById('video-currentTime0').innerHTML = Math.round(video.currentTime / 60) + ":" + (Math.round(video.currentTime) % 60).toString().replace(/^(\d)$/, '0$1');
                 
                 if (seekBar.classList.contains('fill')) {
-                    styles["-fullscreen"] = getFillStyle(seekBar);
+                    styles[0] = getFillStyle(seekBar);
                 }
                 else {
-                    styles["-fullscreen"] = '';
+                    styles[0] = '';
                 }
                 if (seekBar.classList.contains('tip')) {
-                    styles["-fullscreen"] += getTipStyle(seekBar);
+                    styles[0] += getTipStyle(seekBar);
                 }
                 s.textContent = styles.join('');
             }
@@ -704,10 +704,11 @@ function fullWindow(canvas) {
                 }, 2500);
             }
             
-            canvasToDraw.addEventListener("mousemove", fullscreenControlListener, false);
+            canvasFullscreen.addEventListener("mousemove", fullscreenControlListener, false);
             $("body").append(videoControls);
+            updateCanvas(windowId, backing.toDataURL("image/jpeg"));
         }
-        else if (windowList[canvas.id].type == "pdf") {
+        else if (windowList[windowId].type == "pdf") {
             var pdfControls = createPdfControls(windowId, true, isMaster);
             pdfControls.style.marginTop = "-64px";
             
@@ -736,32 +737,33 @@ function fullWindow(canvas) {
                     $("#fullscreen-controls-id").slideUp(200);
                 }, 2500);
             }
-            canvasToDraw.addEventListener("mousemove", fullscreenControlListener, false);
+            canvasFullscreen.addEventListener("mousemove", fullscreenControlListener, false);
             $("body").append(pdfControls);
-            reloadCanvas(canvas);
+            updateCanvas(windowId, backing.toDataURL("image/jpeg"));
+            //reloadCanvas(canvas);
         }
         
         var fullscreenButton = document.getElementById('close-fullscreen');
-        var draw = canvasToDraw.getContext('2d');
+        var draw = canvasFullscreen.getContext('2d');
         
         
         
         var resize = function (e) {
             //canvas.width = window.innerWidth;
             //canvas.height = window.innerHeight;
-            canvasToDraw.width = window.innerWidth;
-            canvasToDraw.height = window.innerHeight;
-            draw.drawImage(backing, 0, 0, canvasToDraw.width, canvasToDraw.height);
+            canvasFullscreen.width = window.innerWidth;
+            canvasFullscreen.height = window.innerHeight;
+            draw.drawImage(backing, 0, 0, canvasFullscreen.width, canvasFullscreen.height);
         }
         window.addEventListener('resize', resize, false);
         
         var listener = function (e) {
-            if (windowList[canvas.id].isRotated && !fullscreenCanvasRotated) {
-                draw.translate(canvasToDraw.width, canvasToDraw.height);
+            if (windowList[windowId].isRotated && !fullscreenCanvasRotated) {
+                draw.translate(canvasFullscreen.width, canvasFullscreen.height);
                 draw.rotate(180 * (Math.PI / 180));
                 fullscreenCanvasRotated = true;
             }
-            draw.drawImage(backing, 0, 0, canvasToDraw.width, canvasToDraw.height);
+            draw.drawImage(backing, 0, 0, canvasFullscreen.width, canvasFullscreen.height);
         }
         
         var endFullscreen = function (e) {
@@ -774,23 +776,35 @@ function fullWindow(canvas) {
             reloadCanvas(canvas)
             
             
-            canvasToDraw.style.display = "none";
+            canvasFullscreen.style.display = "none";
             fullWindowState = false;
             $("#fullscreen-controls-id").slideUp(1);
             
-            if (windowList[canvas.id].type == "video") {
+            if (windowList[windowId].type == "video") {
                 document.body.removeChild(videoControls);
                 if (isMaster) {
                     video.removeEventListener("timeupdate", listenerVideoTimeUpdate, false);
+                    //To send a new picture to display it not tiled
+                    var canvas_temp = document.createElement("canvas");
+                    canvas_temp.width = video.videoWidth;
+                    canvas_temp.height = video.videoHeight;
+                    $(canvas_temp).css("display", "none");
+                    var context_temp = canvas_temp.getContext('2d');
+                    context_temp.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+                    shareImage(windowId, canvas_temp.toDataURL("image/jpeg"));
                 }
                 else {
                     canvas.removeEventListener("dataupdate", listenerCanvasDataUpdate, false);
                 }
             }
-            else if (windowList[canvas.id].type == "pdf") {
+            else if (windowList[windowId].type == "pdf") {
                 document.body.removeChild(pdfControls);
+                if (isMaster) {
+                    loadPdfPage(windowId, windowList[windowId].data.currentPosition);
+                }
+               
             }
-            canvasToDraw.removeEventListener("mousemove", fullscreenControlListener, false);
+            canvasFullscreen.removeEventListener("mousemove", fullscreenControlListener, false);
             fullscreenButton.removeEventListener("mousedown", askEndFullscreen, false);
             canvas.removeEventListener("endfullscreen", endFullscreen, false);
             canvas.removeEventListener("draw", listener, false);
@@ -883,8 +897,8 @@ function initializeEventListener() {
         var windowId = e.currentTarget.parentElement.parentElement.parentElement.id.split('window')[1];
         var canvas = document.getElementById("canvas" + windowId);
         
-        if (windowList["canvas" + windowId].type == "game") {
-            windowList["canvas" + windowId].data.game.launchFullScreen();
+        if (windowList[windowId].type == "game") {
+            windowList[windowId].data.game.launchFullScreen();
         }
         else {
             fullWindow(canvas);
@@ -894,11 +908,11 @@ function initializeEventListener() {
     $(".display").on("touchstart mousedown", "label.icon-tiled", function (e) {
         e.preventDefault();
         var windowId = e.currentTarget.parentElement.parentElement.parentElement.id.split('window')[1];
-        if (windowList["canvas" + windowId].type == "game") {
+        if (windowList[windowId].type == "game") {
             askRemoteGameControl(windowId, "ping-pong", "tiled-display", "", "all");
         }
         else {
-            askRemoteMediaControl(windowId, windowList["canvas" + windowId].type, "tiled-display", infos.position, "all");
+            askRemoteMediaControl(windowId, windowList[windowId].type, "tiled-display", infos.position, "all");
         }
     });
     

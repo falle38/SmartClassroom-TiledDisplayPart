@@ -486,7 +486,7 @@ launchPingPongGame = function (windowId, isMaster) {
         var mx = e.offsetX;
         var my = e.offsetY;
         
-        if (windowList[canvas.id].isTiled) {
+        if (windowList[windowId].isTiled) {
             
             var startX = game.startBtn.x;
             var startY = game.startBtn.y - game.H / 2 + 50;
@@ -528,7 +528,7 @@ launchPingPongGame = function (windowId, isMaster) {
                 game.restart();
             }
         }
-        if (windowList[canvas.id].isTiled) {
+        if (windowList[windowId].isTiled) {
             if (mx >= game.quitBtn.x && mx <= (game.quitBtn.x + game.quitBtn.w) && my >= game.quitBtn.y && my <= (game.quitBtn.y + game.quitBtn.h)) {
                 askRemoteGameControl(windowId, "ping-pong", "endfullscreen", "", "all");
                 //var eventEndFullscreen = new Event('endfullscreen');
@@ -544,7 +544,7 @@ launchPingPongGame = function (windowId, isMaster) {
             fullWindowState = true;
             var drawing = true;
             var windowId = canvas.id.split('canvas')[1];
-            var isMaster = windowList[canvas.id].isMaster;
+            var isMaster = windowList[windowId].isMaster;
             
             // Canvas goes full window
             var canvasToDraw = document.getElementById('canvasFullscreen');
@@ -596,7 +596,7 @@ launchPingPongGame = function (windowId, isMaster) {
             var tileWidth = backing_canvas.width;
             var tileHeight = backing_canvas.height;
             
-            if (windowList[canvas.id].isTiled) {
+            if (windowList[windowId].isTiled) {
                 console.log("TILED");
                 game.areaSide = 2;
                 tileWidth = Math.round(backing_canvas.width / cols);
@@ -630,7 +630,7 @@ launchPingPongGame = function (windowId, isMaster) {
                 canvasToDraw.style.display = "none";
                 fullWindowState = false;
                 drawing = false;
-                windowList[canvas.id].isTiled = false;
+                windowList[windowId].isTiled = false;
 
                 canvasToDraw.removeEventListener("mousemove", trackPosition, false);
                 canvasToDraw.removeEventListener("touchmove", trackPosition, false);
@@ -663,7 +663,7 @@ launchPingPongGame = function (windowId, isMaster) {
     canvas.addEventListener("touchdown", btnClick, true);
     
     
-    windowList[canvas.id].data = { "game": game }
+    windowList[windowId].data = { "game": game }
     var ctx = canvas.getContext("2d");
     //ctx.translate(canvas.width, 0);
     //ctx.rotate(90 * (Math.PI / 180));

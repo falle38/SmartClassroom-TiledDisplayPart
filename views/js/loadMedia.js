@@ -37,36 +37,12 @@ function loadPdf(windowId, url) {
     PDFJS.getDocument('/static/helloworld.pdf').then(function (pdf) {
         //PDFJS.disableWorker = true;
         var data = { "masterPosition":infos.position, "pdf": pdf, "currentPosition": 1, "total": pdf.numPages};
-        var canvasToDraw = createCanvas(windowId, "PDF", 400, 300, "pdf", true, true, data);
+        createCanvas(windowId, "PDF", 400, 300, "pdf", true, true, data);
         //We send data to clients without the pdf object
-        data = { "currentPosition": 1, "total": pdf.numPages };
-        shareMediaDisplay(windowId, "pdf", "VIDEO", false, data);
-
-        var drawContext = canvasToDraw.getContext('2d');
-        // Using promise to fetch the page
-        pdf.getPage(1).then(function (page) {
-            var scale = 1.5;
-            var viewport = page.getViewport(scale);
-            
-            //
-            // Prepare canvas using PDF page dimensions
-            //
-            var backing_canvas = document.getElementById("backing_" + canvasToDraw.id);
-            backing_canvas.height = viewport.height;
-            backing_canvas.width = viewport.width;
-            var backing_context = backing_canvas.getContext('2d');
-             
-            //
-            // Render PDF page into canvas context
-            //
-            var renderContext = {
-                canvasContext: backing_context,
-                viewport: viewport
-            };
-            page.render(renderContext).promise.then(function () {
-                drawContext.drawImage(backing_canvas, 0, 0, canvasToDraw.width, canvasToDraw.height);
-            });;
-        });
+        data = { "masterPosition": infos.position, "currentPosition": 1, "total": pdf.numPages };
+        shareMediaDisplay(windowId, "pdf", "PDF", false, data);
+        //Load the first page
+        loadPdfPage(windowId, 1);
     });
 }
 
@@ -75,7 +51,7 @@ function loadPdf(windowId, url) {
 //=============================================================================
 function loadPdfPage(windowId, index) {
     var canvas = document.getElementById("canvas" + windowId);
-    var data = windowList[canvas.id].data;
+    var data = windowList[windowId].data;
     data.pdf.getPage(index).then(function (page) {
         var scale = 1.5;
         var viewport = page.getViewport(scale);
@@ -96,9 +72,9 @@ function loadPdfPage(windowId, index) {
             viewport: viewport
         };
         page.render(renderContext).promise.then(function () {
-            var context = canvas.getContext('2d');
-            context.drawImage(backing_canvas, 0, 0, canvas.width, canvas.height);
-            shareImage(windowId, canvas.toDataURL("image/jpeg"));
+            //var context = canvas.getContext('2d');
+            //context.drawImage(backing_canvas, 0, 0, canvas.width, canvas.height);
+            shareImage(windowId, backing_canvas.toDataURL("image/jpeg"));
         });;
     });
     data.currentPosition = index;
@@ -109,7 +85,7 @@ function loadSharedWindow(windowId) {
     var canvas = createCanvas(windowId, "SHARED MAIN", 400, 300, "shared", true, true);
     var rows = 2;
     //if (infos.position.j <= ((rows / 2) - 1)) {
-    //    if (!windowList[canvas.id].isRotated) {
+    //    if (!windowList[windowId].isRotated) {
     //        windowRotation(windowId, 180);
     //    }
     //}

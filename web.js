@@ -70,8 +70,8 @@ orientation["SW"] = false;
 orientation["SE"] = false;
 
 
-
-var nbWindow = 0;
+//THE ID 0 IS RESERVED FOR FULLSCREEN CANVAS
+var nbWindow = 1;
 
 
 
@@ -191,6 +191,7 @@ everyone.now.shareMediaDisplay = function (windowId, type, title, isPlayingAudio
         hosts[windowId] = host;
         everyone.now.filterLaunchSharedMediaDisplay(windowId, type, title, data);
     };
+    //Launch callback with the number of client in the group
     everyone.count(countCallback);
     
     this.now.ReadyToReceiveMedia(windowId, type);

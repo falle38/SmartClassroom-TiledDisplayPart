@@ -80,7 +80,7 @@ $(document).ready(function () {
         var canvas = createCanvas(windowId, "SHARED TEST", 400, 300, "shared", false, true);
         var rows = 2;
         if (infos.position.j <= ((rows / 2) - 1)) {
-            if (!windowList[canvas.id].isRotated) {
+            if (!windowList[windowId].isRotated) {
                 windowRotation(windowId, 180);
             }
         }
@@ -141,7 +141,7 @@ $(document).ready(function () {
         //If the window is on the display
         //if (left >= 0 && left <= width && top >= 0 && top <= height && (left + windowWidth) >= 0 && (left + windowWidth) <= width && (top + windowHeight) >= 0 && (top + windowHeight) <= height) {
         if (left >= (0 + 20) && left <= (width - 20) && top >= (0 + 20) && top <= (height - 20) && (left + windowWidth) >= (0 + 20) && (left + windowWidth) <= (width - 20) && (top + windowHeight) >= (0 + 20) && (top + windowHeight) <= (height - 20)) {
-            if (windowList["canvas" + windowId].isRotated &&  !isRotating) {
+            if (windowList[ windowId].isRotated &&  !isRotating) {
                 console.log("DO ROTATION")
                 askWindowRotation(windowId, 180);
             }
@@ -152,13 +152,13 @@ $(document).ready(function () {
     // the data is a base64-encoded image
     windowRotation = function (windowId, degree) {
         var window = getWindow(windowId);
-        var angle = windowList["canvas" + windowId].angle + degree;
-        windowList["canvas" + windowId].angle = angle;
+        var angle = windowList[windowId].angle + degree;
+        windowList[windowId].angle = angle;
         isRotating = true;
         setTimeout(function () { isRotating = false;}, 1000);
         window.style.WebkitTransitionDuration = '1s';
         window.style.webkitTransform = 'rotate(' + angle + 'deg)';
-        windowList["canvas" + windowId].isRotated = !windowList["canvas" + windowId].isRotated;
+        windowList[windowId].isRotated = !windowList[windowId].isRotated;
         
 
 
@@ -247,6 +247,7 @@ $(document).ready(function () {
     // called from server - to update the image data just for this client page
     // the data is a base64-encoded image
     updateCanvas = function (windowId, image) {
+        console.log("UPDATE CANVAS")
         var window = getWindow(windowId);
         var canvasToDraw = document.getElementById("canvas" + windowId);
         var draw = canvasToDraw.getContext('2d');
@@ -257,8 +258,8 @@ $(document).ready(function () {
         
         // when the image loaded, draw the image on HTML5 canvas
         img.addEventListener("load", function () {
-            var isTiled = windowList[canvasToDraw.id].isTiled;
-            var masterPosition = windowList[canvasToDraw.id].data.masterPosition;
+            var isTiled = windowList[windowId].isTiled;
+            var masterPosition = windowList[windowId].data.masterPosition;
 
             var backing_canvas = document.getElementById("backing_" + canvasToDraw.id);
             backing_canvas.width = img.width;
@@ -306,20 +307,20 @@ $(document).ready(function () {
                 tileX = tileX + i * tileWidth;
                 tileY = tileY + j * tileHeight;
                 if (j <= ((rows / 2) - 1)) {
-                    if (!windowList[canvasToDraw.id].isRotated) {
+                    if (!windowList[windowId].isRotated) {
                         console.log("ROTATED CS")
                         //draw.translate(canvasToDraw.width, canvasToDraw.height);
                         //draw.rotate(180 * (Math.PI / 180));
-                        windowList[canvasToDraw.id].isRotated = true;
+                        windowList[windowId].isRotated = true;
                     }
                 }
             }
             else {
-                if (windowList[canvasToDraw.id].isRotated) {
+                if (windowList[windowId].isRotated) {
                     console.log("ROTATED CS")
                     //draw.translate(canvasToDraw.width, canvasToDraw.height);
                     //draw.rotate(180 * (Math.PI / 180));
-                    windowList[canvasToDraw.id].isRotated = false;
+                    windowList[windowId].isRotated = false;
                 }
             }
             
@@ -349,8 +350,9 @@ $(document).ready(function () {
         if (mediaType == "video") {
             if (controlType == "tiled-display") {
                 var canvas = document.getElementById("canvas" + windowId);
-                windowList[canvas.id].data.masterPosition = value;
-                windowList[canvas.id].isTiled = true;
+                windowList[windowId].data.masterPosition = value;
+                windowList[windowId].isTiled = true;
+                //updateCanvas(windowId, canvas.toDataURL("image/jpeg"))
                 fullWindow(canvas);
             }
             else if (controlType == "seekbar") {
@@ -360,7 +362,7 @@ $(document).ready(function () {
             else if (controlType == "play") {
                 if (value == "event") {
                     var canvas = document.getElementById('canvas' + windowId);
-                    windowList[canvas.id].data.paused = false;
+                    windowList[windowId].data.paused = false;
                     var play = document.getElementById('play-video' + windowId);
                     play.innerHTML = "PAUSE";
                 }
@@ -375,7 +377,7 @@ $(document).ready(function () {
             else if (controlType == "pause") {
                 if (value == "event") {
                     var canvas = document.getElementById('canvas' + windowId);
-                    windowList[canvas.id].data.paused = true;
+                    windowList[windowId].data.paused = true;
                     var play = document.getElementById('play-video' + windowId);
                     play.innerHTML = "PLAY";
                 }
@@ -388,19 +390,21 @@ $(document).ready(function () {
             }
             else if (controlType == "currentTime") {
                 var canvas = document.getElementById("canvas" + windowId);
-                windowList[canvas.id].data.currentTime = value.currentTime;
+                windowList[windowId].data.currentTime = value.currentTime;
                 canvas.dispatchEvent(eventTimeUpdate);
             }
             else if (controlType == "endfullscreen") {
                 var canvas = document.getElementById('canvas' + windowId);
-                windowList[canvas.id].isTiled = false;
+                windowList[windowId].isTiled = false;
                 canvas.dispatchEvent(eventEndFullscreen);
             }
         }
         else if (mediaType == "pdf") {
-            if (controlType == "switch-tiled-display") {
+            if (controlType == "tiled-display") {
                 var canvas = document.getElementById("canvas" + windowId);
-                windowList[canvas.id].isTiled = true;
+                windowList[windowId].data.masterPosition = value;
+                windowList[windowId].isTiled = true;
+                //updateCanvas(windowId, canvas.toDataURL("image/jpeg"))
                 fullWindow(canvas);
             }
             else if (controlType == "seekbar") {
@@ -412,7 +416,7 @@ $(document).ready(function () {
             else if (controlType == "seekbar-event") {
                 var seekBar = document.getElementById('video-slider' + windowId)
                 seekBar.value = value;
-                windowList["canvas" + windowId].data.currentPosition = value;
+                windowList[windowId].data.currentPosition = value;
                 
                 if (seekBar.classList.contains('fill')) {
                     styles[windowId] = getFillStyle(seekBar);
@@ -439,7 +443,7 @@ $(document).ready(function () {
                         styles[windowId] += getTipStyle(seekBar);
                     }
                     s.textContent = styles.join('');
-                    windowList["canvas" + windowId].data.currentPosition--;
+                    windowList[windowId].data.currentPosition--;
                 }
                 else {
                     var previous = document.getElementById('previous-pdf' + windowId)
@@ -462,7 +466,7 @@ $(document).ready(function () {
                         styles[windowId] += getTipStyle(seekBar);
                     }
                     s.textContent = styles.join('');
-                    windowList["canvas" + windowId].data.currentPosition++;
+                    windowList[windowId].data.currentPosition++;
                 }
                 else {
                     var next = document.getElementById('next-pdf' + windowId)
@@ -472,7 +476,7 @@ $(document).ready(function () {
             }
             else if (controlType == "endfullscreen") {
                 var canvas = document.getElementById('canvas' + windowId);
-                windowList[canvas.id].isTiled = false;
+                windowList[windowId].isTiled = false;
                 canvas.dispatchEvent(eventEndFullscreen);
             }
         }
@@ -480,13 +484,13 @@ $(document).ready(function () {
     
     switchToTiledDisplay = function (windowId){
         var canvas = document.getElementById("canvas" + windowId);
-        windowList[canvas.id].isTiled = true;
+        windowList[windowId].isTiled = true;
         fullWindow(canvas);
     }
 
     switchToNormalDisplay = function (windowId) {
         var canvas = document.getElementById("canvas" + windowId);
-        windowList[canvas.id].isTiled = false;
+        windowList[windowId].isTiled = false;
     }
     
 
@@ -507,31 +511,31 @@ $(document).ready(function () {
         if (game == "ping-pong") {
             if (controlType == "start") {
                 console.log("REMOTE START")
-                windowList["canvas" + windowId].data.game.start();
+                windowList[windowId].data.game.start();
             }
             else if (controlType == "restart") {
-                windowList["canvas" + windowId].data.game.restart();
+                windowList[windowId].data.game.restart();
             }
             else if (controlType == "moveBall") {
-                var x = (value.x * windowList["canvas" + windowId].data.game.W) / value.W;
-                var y = (value.y * windowList["canvas" + windowId].data.game.H) / value.H;
-                windowList["canvas" + windowId].data.game.ball.x = windowList["canvas" + windowId].data.game.W - x;
-                windowList["canvas" + windowId].data.game.ball.y = windowList["canvas" + windowId].data.game.H - y;
+                var x = (value.x * windowList[windowId].data.game.W) / value.W;
+                var y = (value.y * windowList[windowId].data.game.H) / value.H;
+                windowList[windowId].data.game.ball.x = windowList[windowId].data.game.W - x;
+                windowList[windowId].data.game.ball.y = windowList[windowId].data.game.H - y;
             }
             else if (controlType == "movePaddle") {
-                var x = (value.x * windowList["canvas" + windowId].data.game.W) / value.W;
-                windowList["canvas" + windowId].data.game.movePaddle(value.id, windowList["canvas" + windowId].data.game.W - windowList["canvas" + windowId].data.game.paddles[value.id].w - x);
+                var x = (value.x * windowList[windowId].data.game.W) / value.W;
+                windowList[windowId].data.game.movePaddle(value.id, windowList[windowId].data.game.W - windowList[windowId].data.game.paddles[value.id].w - x);
             }
             else if (controlType == "tiled-display") {
-                windowList["canvas" + windowId].isTiled = true;
-                windowList["canvas" + windowId].data.game.launchFullScreen();
+                windowList[windowId].isTiled = true;
+                windowList[windowId].data.game.launchFullScreen();
                 
             }
             else if (controlType == "endfullscreen") {
                 var eventEndFullscreen = new Event('endfullscreen');
                 var canvas = document.getElementById('canvas' + windowId);
                 canvas.dispatchEvent(eventEndFullscreen);
-                windowList["canvas" + windowId].isTiled = false;
+                windowList[windowId].isTiled = false;
             }
         }
     }
