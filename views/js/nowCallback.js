@@ -12,12 +12,12 @@ $(function () {
 // CREATE MEDIA WINDOW : (VIDEO, PDF, APPS ETC...)
 //=============================================================================
 
-function askServerLoadVideoTiledDisplay(url) {
-    now.getWindowId("video-tiled", url);
+function askServerLoadPicture(url) {
+    now.getWindowId("picture", url);
 }
 
-function askServerLoadVideoNormalDisplay(url) {
-    now.getWindowId("video-normal", url);
+function askServerLoadVideoTiledDisplay(url) {
+    now.getWindowId("video-tiled", url);
 }
 
 function askServerLoadPdf(url) {
@@ -66,6 +66,22 @@ askWindowRotation = function (windowID, degree) {
 
 now.windowRotation = function (windowId, degree) {
     windowRotation(windowId, degree);
+};
+
+shareWindowAngle = function (windowID, positionRemoteClient, degree) {
+    now.shareWindowAngle(windowID, positionRemoteClient, degree);
+};
+
+now.updateWindowAngle = function (windowId, positionRemoteClient, degree) {
+    updateWindowAngle(windowId, positionRemoteClient, degree);
+};
+
+shareWindowSize = function (windowID, event) {
+    now.shareWindowSize(windowID, event);
+};
+
+now.resizeWindow = function (windowId, event) {
+    resizeWindow(windowId, event);
 };
 
 

@@ -14,8 +14,15 @@ var maxScale = 2;
 
 function rotateDisplayDiv() {
     var display = document.body;
-    display.style.webkitTransform = 'rotate(' + 180 + 'deg)';
-    isRotated = true;
+    if (!isRotated) {
+        display.style.webkitTransform = 'rotate(' + 180 + 'deg)';
+        isRotated = true;
+    }
+    else {
+        display.style.webkitTransform = 'rotate(' + 0 + 'deg)';
+        isRotated = false;
+    }
+   
 }
 
 
@@ -51,7 +58,7 @@ function addWindow(windowId, title, width, height, type, isShared) {
     //CREATE TILED DISPLAY ICON
     var iconRotation = document.createElement('label');
     iconRotation.className = 'icon-rotation';
-    iconRotation.innerHTML = "R";
+    iconRotation.innerHTML = "M";
     
     //CREATE CLOSE ICON
     var iconClose = document.createElement('label');
@@ -79,7 +86,8 @@ function addWindow(windowId, title, width, height, type, isShared) {
     var windowFormDiv = document.createElement('div');
     windowFormDiv.className = 'window-form';
     //windowFormDiv.innerHTML = "Content";
-    windowFormDiv.style.height = height + 'px';
+    //windowFormDiv.style.height = '100% - 50px';
+    //windowFormDiv.style.height = height + 'px';
     
     //ADD HEADER AND DISPLAY DIV INTO WINDOW
     windowDiv.appendChild(windowHeader);
@@ -96,6 +104,8 @@ function addWindow(windowId, title, width, height, type, isShared) {
         if (infos.position.j <= ((rows / 2) - 1)) {
             orientation = 'reversed'
         }
+        if (windowList[windowId].modificationType != "dragging") return;
+        var isRotating = false;
         $("#" + e.currentTarget.parentElement.id).pep({
             constrainTo: 'parent',
             tablePosition: infos.position,
@@ -112,8 +122,72 @@ function addWindow(windowId, title, width, height, type, isShared) {
                 
                 var width = $('div.display').width();
                 var height = $('div.display').height();
+                var top = obj.$el.context.offsetTop;
+                var left = obj.$el.context.offsetLeft;
+                var windowWidth = $('#window' + windowId).width();
+                var windowHeight = $('#window' + windowId).height();
                 if (isShared) {
-                    now.shareWindowPosition(windowId, infos.position, obj.$el.context.offsetTop, obj.$el.context.offsetLeft, width, height);
+                    shareWindowPosition(windowId, infos.position, obj.$el.context.offsetTop, obj.$el.context.offsetLeft, width, height);
+                    //if (left >= (0 + 20) && left <= (width - 20) && top >= (0 + 20) && top <= (height - 20) && (left + windowWidth) >= (0 + 20) && (left + windowWidth) <= (width - 20) && (top + windowHeight) >= (0 + 20) && (top + windowHeight) <= (height - 20)) {
+                    //    if (windowList[windowId].isRotated && !isRotating) {
+                    //        isRotating = true;
+                    //        askWindowRotation(windowId, -windowList[windowId].angle);
+                    //    }
+                    //}
+                }
+            },
+            
+            easing: function (ev, obj) {
+                var width = $('div.display').width();
+                var height = $('div.display').height();
+                var top = obj.$el.context.offsetTop;
+                var left = obj.$el.context.offsetLeft;
+                var windowWidth = $('#window' + windowId).width();
+                var windowHeight = $('#window' + windowId).height();
+                if (isShared) {
+                    shareWindowPosition(windowId, infos.position, obj.$el.context.offsetTop, obj.$el.context.offsetLeft, width, height);
+                    //if (left >= (0 + 20) && left <= (width - 20) && top >= (0 + 20) && top <= (height - 20) && (left + windowWidth) >= (0 + 20) && (left + windowWidth) <= (width - 20) && (top + windowHeight) >= (0 + 20) && (top + windowHeight) <= (height - 20)) {
+                    //    if (windowList[windowId].isRotated && !isRotating) {
+                    //        isRotating = true;
+                    //        askWindowRotation(windowId, -windowList[windowId].angle);
+                    //    }
+                    //}
+                }
+            },
+            stop: function (ev, obj) {
+                var vel = obj.velocity();
+                //console.log(vel);
+                
+                if (vel.x > 1500 || vel.y > 1500 || vel.x < -1500 || vel.y < -1500) {
+                    console.log("TABLE SUIVANTE");
+                    //obj.$el.css({ background : 'green'}); 
+                }
+                $.pep.unbind($("#" + e.currentTarget.parentElement.id));
+            }
+        });
+    });
+    
+    //MANAGE DRAG AND DROP FOR MOUSE
+    $("#window-header" + windowId).on("touchstart", function (e) {
+        console.log("Touch Event")
+        e.preventDefault();
+        if (windowList[windowId].modificationType != "dragging") return;
+        $("#" + e.currentTarget.parentElement.id).pep({
+            // constrainTo: 'parent',
+            rotation : isRotated,
+            velocityMultiplier: 5,
+            start: function (ev, obj) {
+                if (notHead) {
+                    $.pep.unbind($("#" + e.currentTarget.parentElement.id));
+                }
+                //obj.$el.css({ background : 'red'});
+            },
+            drag: function (ev, obj) {
+                
+                var width = $('div.display').width();
+                var height = $('div.display').height();
+                if (isShared) {
+                    shareWindowPosition(windowId, infos.position, obj.$el.context.offsetTop, obj.$el.context.offsetLeft, width, height);
                     //if (isRotated) {
                     //    now.shareWindowPosition(windowId, infos.orientation, height - obj.$el.context.offsetTop, width - obj.$el.context.offsetLeft, width, height);
                         
@@ -129,7 +203,7 @@ function addWindow(windowId, title, width, height, type, isShared) {
                 var height = $('div.display').height();
                 
                 if (isShared) {
-                    now.shareWindowPosition(windowId, infos.position, obj.$el.context.offsetTop, obj.$el.context.offsetLeft, width, height);
+                    shareWindowPosition(windowId, infos.position, obj.$el.context.offsetTop, obj.$el.context.offsetLeft, width, height);
                     //if (isRotated) {
                     //    now.shareWindowPosition(windowId, infos.orientation, height - obj.$el.context.offsetTop, width - obj.$el.context.offsetLeft, width, height);
                         
@@ -152,77 +226,31 @@ function addWindow(windowId, title, width, height, type, isShared) {
         });
     });
     
-    //MANAGE DRAG AND DROP FOR MOUSE
-    $("#window-header" + windowId).on("touchstart", function (e) {
-        console.log("Touch Event")
-        e.preventDefault();
-        $("#" + e.currentTarget.parentElement.id).pep({
-            // constrainTo: 'parent',
-            rotation : isRotated,
-            velocityMultiplier: 5,
-            start: function (ev, obj) {
-                if (notHead) {
-                    $.pep.unbind($("#" + e.currentTarget.parentElement.id));
-                }
-                //obj.$el.css({ background : 'red'});
-            },
-            drag: function (ev, obj) {
-                
-                var width = $('div.display').width();
-                var height = $('div.display').height();
-                if (isShared) {
-                    now.shareWindowPosition(windowId, infos.position, obj.$el.context.offsetTop, obj.$el.context.offsetLeft, width, height);
-                    //if (isRotated) {
-                    //    now.shareWindowPosition(windowId, infos.orientation, height - obj.$el.context.offsetTop, width - obj.$el.context.offsetLeft, width, height);
-                        
-                    //}
-                    //else {
-                    //    now.shareWindowPosition(windowId, infos.orientation, obj.$el.context.offsetTop, obj.$el.context.offsetLeft, width, height);
-                    //}
-                }
-            },
-            
-            easing: function (ev, obj) {
-                var width = $('div.display').width();
-                var height = $('div.display').height();
-                
-                if (isShared) {
-                    now.shareWindowPosition(windowId, infos.position, obj.$el.context.offsetTop, obj.$el.context.offsetLeft, width, height);
-                    //if (isRotated) {
-                    //    now.shareWindowPosition(windowId, infos.orientation, height - obj.$el.context.offsetTop, width - obj.$el.context.offsetLeft, width, height);
-                        
-                    //}
-                    //else {
-                    //    now.shareWindowPosition(windowId, infos.orientation, obj.$el.context.offsetTop, obj.$el.context.offsetLeft, width, height);
-                    //}
-                }
-            },
-            stop: function (ev, obj) {
-                var vel = obj.velocity();
-                //console.log(vel);
-                
-                if (vel.x > 1500 || vel.y > 1500 || vel.x < -1500 || vel.y < -1500) {
-                    console.log("TABLE SUIVANTE");
-                    //obj.$el.css({ background : 'green'}); 
-                }
-                $.pep.unbind($("#" + e.currentTarget.parentElement.id));
-            }
-        });
-        
-        var scale = 1;
-        var angle = 0;
-        
-        interact(windowDiv).gesturable({
-            onmove: function (event) {
-                
-                windowDiv.style.removeProperty('-webkit-transition');
-                windowDiv.style.removeProperty('transition');
-                scale = scale * (1 + event.ds);
-                windowDiv.style.webkitTransform = windowDiv.style.transform = 'scale(' + scale + ')';
-                angle += event.da;
-                windowDiv.style.webkitTransform = windowDiv.style.transform = windowDiv.style.transform + ' rotate(' + angle + 'deg)';
-            }
-        });
+    var offset = { x: 0, y: 0 };
+    
+    interact('.window')
+  .resizable({
+        edges: { left: false, right: true, bottom: true, top: false }
+    })
+  .on('resizemove', function (event) {
+        if (windowList[windowId].modificationType != "resize") return;
+        var rect = { "height" : event.rect.height, "width": event.rect.width }
+        var delta = { "left" : event.deltaRect.left, "top": event.deltaRect.top }
+        var e = { "rect" : rect, "deltaRect": delta }
+        shareWindowSize(windowId, e);
+    });
+
+
+    
+    interact(windowDiv).gesturable({
+        onmove: function (event) {
+            if (windowList[windowId].modificationType != "rotation") return;
+            //scale = scale * (1 + event.ds);
+            //windowDiv.style.webkitTransform = windowDiv.style.transform = 'scale(' + scale + ')';
+            //angle += event.da;
+            shareWindowAngle(windowId, infos.position, event.da);
+                //windowDiv.style.webkitTransform = windowDiv.style.transform = windowDiv.style.transform + ' rotate(' + angle + 'deg)';
+        }
     });
     return windowDiv;
 }
@@ -268,9 +296,12 @@ function initializeAudioplayer(id, windowId) {
 function createCanvas(windowId, title, width, height, type, isMaster, isShared, data) {
     var canvas = document.createElement('canvas');
     canvas.id = 'canvas' + windowId;
+    canvas.style.position = "relative";
+    canvas.style.display = "block";
+    canvas.style.width = "100%";
+    //canvas.style.height = "100%";
     canvas.width = width;
     canvas.height = height;
-    
     var backing_canvas = document.createElement("canvas");
     backing_canvas.id = "backing_" + canvas.id;
     backing_canvas.style.display = "none";
@@ -280,7 +311,7 @@ function createCanvas(windowId, title, width, height, type, isMaster, isShared, 
     windowDiv.getElementsByClassName('window-form')[0].appendChild(canvas);
     windowDiv.getElementsByClassName('window-form')[0].appendChild(backing_canvas);
     
-    var media = { "type": type, "isTiled": false, "isRotated": false, "angle": 0, "isMaster": isMaster, "data": data }
+    var media = { "modificationType" : "dragging", "offset" : {"x":0,"y":0}, "type": type, "isTiled": false, "isRotated": false, "angle": 0, "isMaster": isMaster, "data": data}
     windowList[windowId] = media;
     
     if (type == "video") {
@@ -346,6 +377,12 @@ function reloadCanvas(canvas) {
     draw.drawImage(backing_canvas, 0, 0, canvas.width, canvas.height);
 }
 
+function fitCanvasToContainer(canvas) {
+        // ...then set the internal size to match
+        canvas.width = canvas.parentElement.offsetWidth;
+    canvas.height = canvas.parentElement.offsetHeight;
+}
+
 function activateCanvasRotation(canvas) {
 
 }
@@ -382,7 +419,12 @@ function createVideoControls(windowId, isFullscreen, isMaster) {
     var play = document.createElement('div');
     play.className = 'play-video';
     play.id = 'play-video' + ID;
-    play.innerHTML = "PLAY";
+    if (video.paused) {
+        play.innerHTML = "PLAY";
+    }
+    else {
+        play.innerHTML = "PAUSE";
+    }
     
     var duration = document.createElement('div');
     duration.className = 'video-duration';
@@ -393,30 +435,20 @@ function createVideoControls(windowId, isFullscreen, isMaster) {
     seekBar.type = "range";
     seekBar.className = ' video-slider fill fill--1';
     seekBar.id = 'video-slider' + ID;
-    seekBar.value = '0';
+    seekBar.value = ((100 * video.currentTime) / video.duration);
     seekBar.step = "0.1";
     seekBar.max = "100";
     styles.push('');
-    
+    updatePrograssFillBar(seekBar, ID);
+
     // Case isFullscreen : The event listener will be set outside this function to remove it easily
     if (isMaster && !isFullscreen) {
         video.addEventListener("timeupdate", function () {
             var data = { "duration": video.duration, "currentTime": video.currentTime };
             askRemoteMediaControl(windowId, "video", "currentTime", data, "except-host");
             seekBar.value = ((100 * video.currentTime) / video.duration);
-            document.getElementById('video-currentTime' + ID).innerHTML = Math.round(video.currentTime / 60) + ":" + (Math.round(video.currentTime) % 60).toString().replace(/^(\d)$/, '0$1');
-            
-            if (seekBar.classList.contains('fill')) {
-                styles[ID] = getFillStyle(seekBar);
-            }
-            else {
-                styles[ID] = '';
-            }
-            if (seekBar.classList.contains('tip')) {
-                styles[ID] += getTipStyle(seekBar);
-            }
-            s.textContent = styles.join('');
-
+            document.getElementById('video-currentTime' + ID).innerHTML = Math.round(video.currentTime / 60) + ":" + (Math.round(video.currentTime) % 60).toString().replace(/^(\d)$/, '0$1'); 
+            updatePrograssFillBar(seekBar, ID);
         }, false);
     }
     // Case isFullscreen : The event listener will be set outside this function to remove it easily
@@ -424,17 +456,7 @@ function createVideoControls(windowId, isFullscreen, isMaster) {
         canvas.addEventListener("dataupdate", function () {
             seekBar.value = ((100 * video.currentTime) / video.duration);
             document.getElementById('video-currentTime' + ID).innerHTML = Math.round(video.currentTime / 60) + ":" + (Math.round(video.currentTime) % 60).toString().replace(/^(\d)$/, '0$1');
-            
-            if (seekBar.classList.contains('fill')) {
-                styles[ID] = getFillStyle(seekBar);
-            }
-            else {
-                styles[ID] = '';
-            }
-            if (seekBar.classList.contains('tip')) {
-                styles[ID] += getTipStyle(seekBar);
-            }
-            s.textContent = styles.join('');
+            updatePrograssFillBar(seekBar, ID);
         }, false);
     }
     
@@ -446,13 +468,7 @@ function createVideoControls(windowId, isFullscreen, isMaster) {
         else {
             askRemoteMediaControl(windowId, "video", "seekbar", this.value, "master");
         }
-        if (this.classList.contains('fill')) {
-            styles[ID] = getFillStyle(this);
-        }
-        else {
-            styles[ID] = '';
-        }
-        s.textContent = styles.join('');
+       updatePrograssFillBar(seekBar, ID);
     }, false);
     
     play.addEventListener('mousedown', function () {
@@ -471,10 +487,12 @@ function createVideoControls(windowId, isFullscreen, isMaster) {
         else {
             if (video.paused) {
                 this.innerHTML = "PAUSE";
+                video.paused = false;
                 askRemoteMediaControl(windowId, "video", "play", "", "master");
             }
             else {
                 this.innerHTML = "PLAY";
+                video.paused = true;
                 askRemoteMediaControl(windowId, "video", "pause", "", "master");
             }
         }
@@ -521,11 +539,12 @@ function createPdfControls(windowId, isFullscreen, isMaster) {
     seekBar.type = "range";
     seekBar.className = ' video-slider fill fill--1';
     seekBar.id = 'video-slider' + ID;
-    seekBar.value = '0';
+    seekBar.value = data.currentPosition - 1;
     seekBar.step = "1";
     seekBar.max = data.total - 1;
     styles.push('');
-    
+    updatePrograssFillBar(seekBar, ID);
+
     seekBar.addEventListener('input', function () {
         if (isMaster) {
             loadPdfPage(windowId, parseInt(this.value) + 1);
@@ -534,13 +553,7 @@ function createPdfControls(windowId, isFullscreen, isMaster) {
         else {
             askRemoteMediaControl(windowId, "pdf", "seekbar", this.value, "master");
         }
-        if (this.classList.contains('fill')) {
-            styles[ID] = getFillStyle(this);
-        }
-        else {
-            styles[ID] = '';
-        }
-        s.textContent = styles.join('');
+        updatePrograssFillBar(seekBar, ID);
     }, false);
     
     previous.addEventListener('mousedown', function () {
@@ -556,16 +569,7 @@ function createPdfControls(windowId, isFullscreen, isMaster) {
                 askRemoteMediaControl(windowId, "pdf", "previous", "", "master");
             }
         }
-        if (seekBar.classList.contains('fill')) {
-            styles[ID] = getFillStyle(seekBar);
-        }
-        else {
-            styles[ID] = '';
-        }
-        if (seekBar.classList.contains('tip')) {
-            styles[ID] += getTipStyle(seekBar);
-        }
-        s.textContent = styles.join('');
+        updatePrograssFillBar(seekBar, ID);
     }, false);
     
     next.addEventListener('mousedown', function () {
@@ -574,17 +578,7 @@ function createPdfControls(windowId, isFullscreen, isMaster) {
                 seekBar.value++;
                 askRemoteMediaControl(windowId, "pdf", "seekbar-event", seekBar.value, "except-host");
                 loadPdfPage(windowId, data.currentPosition + 1);
-                
-                if (seekBar.classList.contains('fill')) {
-                    styles[ID] = getFillStyle(seekBar);
-                }
-                else {
-                    styles[ID] = '';
-                }
-                if (seekBar.classList.contains('tip')) {
-                    styles[ID] += getTipStyle(seekBar);
-                }
-                s.textContent = styles.join('');
+                updatePrograssFillBar(seekBar, ID);
             }
         }
         else {
@@ -613,7 +607,7 @@ function fullWindow(canvas) {
         
         // Canvas goes full window
         var canvasFullscreen = document.getElementById('canvasFullscreen');
-        var backing = document.getElementById('backing_' + canvas.id);
+        var backing_canvas = document.getElementById('backing_' + canvas.id);
         //var divFullscreen = document.getElementById('divFullscreen');")
         launchFullScreen(document.documentElement);
         
@@ -636,23 +630,12 @@ function fullWindow(canvas) {
             videoControls.style.marginTop = "-64px";
             
             var listenerVideoTimeUpdate = function (e) {
-                
                 var data = { "duration": this.duration, "currentTime": this.currentTime };
                 askRemoteMediaControl(windowId, "video", "currentTime", data, "except-host");
                 var seekBar = document.getElementById('video-slider0');
                 seekBar.value = ((100 * this.currentTime) / this.duration);
                 document.getElementById('video-currentTime0').innerHTML = Math.round(this.currentTime / 60) + ":" + (Math.round(this.currentTime) % 60).toString().replace(/^(\d)$/, '0$1');
-                
-                if (seekBar.classList.contains('fill')) {
-                    styles[0] = getFillStyle(seekBar);
-                }
-                else {
-                    styles[0] = '';
-                }
-                if (seekBar.classList.contains('tip')) {
-                    styles[0] += getTipStyle(seekBar);
-                }
-                s.textContent = styles.join('');
+                updatePrograssFillBar(seekBar, 0);
             }
             
             var listenerCanvasDataUpdate = function (e) {
@@ -660,17 +643,7 @@ function fullWindow(canvas) {
                 var seekBar = document.getElementById('video-slider0');
                 seekBar.value = ((100 * video.currentTime) / video.duration);
                 document.getElementById('video-currentTime0').innerHTML = Math.round(video.currentTime / 60) + ":" + (Math.round(video.currentTime) % 60).toString().replace(/^(\d)$/, '0$1');
-                
-                if (seekBar.classList.contains('fill')) {
-                    styles[0] = getFillStyle(seekBar);
-                }
-                else {
-                    styles[0] = '';
-                }
-                if (seekBar.classList.contains('tip')) {
-                    styles[0] += getTipStyle(seekBar);
-                }
-                s.textContent = styles.join('');
+                updatePrograssFillBar(seekBar, 0);
             }
             
             if (isMaster) {
@@ -686,13 +659,11 @@ function fullWindow(canvas) {
                     clearTimeout(timeoutIdentifier);
                 }
                 timeoutIdentifier = setTimeout(function () {
-                    $("#fullscreen-controls-id").slideUp(200);
                     $("#" + videoControls.id).slideUp(200);
                 }, 2500);
             });
             
             var fullscreenControlListener = function (e) {
-                $("#fullscreen-controls-id").slideDown(200);
                 $("#" + videoControls.id).slideDown(200);
                 
                 if (timeoutIdentifier) {
@@ -700,47 +671,43 @@ function fullWindow(canvas) {
                 }
                 timeoutIdentifier = setTimeout(function () {
                     $("#" + videoControls.id).slideUp(200);
-                    $("#fullscreen-controls-id").slideUp(200);
                 }, 2500);
             }
             
             canvasFullscreen.addEventListener("mousemove", fullscreenControlListener, false);
             $("body").append(videoControls);
-            updateCanvas(windowId, backing.toDataURL("image/jpeg"));
+            updateCanvas(windowId, backing_canvas.toDataURL("image/jpeg"));
         }
         else if (windowList[windowId].type == "pdf") {
             var pdfControls = createPdfControls(windowId, true, isMaster);
             pdfControls.style.marginTop = "-64px";
             
             var timeoutIdentifier;
-            $("#" + pdfControls.id).mousedown(function (e) {
-                console.log(timeoutIdentifier)
+            $("#" + pdfControls.id).mousemove(function (e) {
                 if (timeoutIdentifier) {
-                    
                     clearTimeout(timeoutIdentifier);
                 }
                 timeoutIdentifier = setTimeout(function () {
-                    $("#fullscreen-controls-id").slideUp(200);
                     $("#" + pdfControls.id).slideUp(200);
                 }, 2500);
             });
             
             var fullscreenControlListener = function (e) {
-                $("#fullscreen-controls-id").slideDown(200);
                 $("#" + pdfControls.id).slideDown(200);
-                
                 if (timeoutIdentifier) {
                     clearTimeout(timeoutIdentifier);
                 }
                 timeoutIdentifier = setTimeout(function () {
                     $("#" + pdfControls.id).slideUp(200);
-                    $("#fullscreen-controls-id").slideUp(200);
                 }, 2500);
             }
             canvasFullscreen.addEventListener("mousemove", fullscreenControlListener, false);
             $("body").append(pdfControls);
-            updateCanvas(windowId, backing.toDataURL("image/jpeg"));
-            //reloadCanvas(canvas);
+            updateCanvas(windowId, backing_canvas.toDataURL("image/jpeg"));
+        }
+        else {
+            
+            updateCanvas(windowId, backing_canvas.toDataURL("image/jpeg"));
         }
         
         var fullscreenButton = document.getElementById('close-fullscreen');
@@ -753,7 +720,7 @@ function fullWindow(canvas) {
             //canvas.height = window.innerHeight;
             canvasFullscreen.width = window.innerWidth;
             canvasFullscreen.height = window.innerHeight;
-            draw.drawImage(backing, 0, 0, canvasFullscreen.width, canvasFullscreen.height);
+            draw.drawImage(backing_canvas, 0, 0, canvasFullscreen.width, canvasFullscreen.height);
         }
         window.addEventListener('resize', resize, false);
         
@@ -763,7 +730,7 @@ function fullWindow(canvas) {
                 draw.rotate(180 * (Math.PI / 180));
                 fullscreenCanvasRotated = true;
             }
-            draw.drawImage(backing, 0, 0, canvasFullscreen.width, canvasFullscreen.height);
+            draw.drawImage(backing_canvas, 0, 0, canvasFullscreen.width, canvasFullscreen.height);
         }
         
         var endFullscreen = function (e) {
@@ -804,6 +771,16 @@ function fullWindow(canvas) {
                 }
                
             }
+            else if (windowList[windowId].type == "picture") {
+                if (isMaster) {
+                    var img = windowList[windowId].data.image;
+                    backing_canvas.width = img.width;
+                    backing_canvas.height = img.height;
+                    var context_backing = backing_canvas.getContext('2d');
+                    context_backing.drawImage(img, 0, 0, img.width, img.height);
+                    shareImage(windowId, backing_canvas.toDataURL("image/jpeg"));
+                }
+            }
             canvasFullscreen.removeEventListener("mousemove", fullscreenControlListener, false);
             fullscreenButton.removeEventListener("mousedown", askEndFullscreen, false);
             canvas.removeEventListener("endfullscreen", endFullscreen, false);
@@ -811,7 +788,7 @@ function fullWindow(canvas) {
             
         }
         var askEndFullscreen = function (e) {
-            askRemoteMediaControl(windowId, "video", "endfullscreen", "", "all");
+            askRemoteMediaControl(windowId, "all", "endfullscreen", "", "all");
         }
         canvas.addEventListener('draw', listener, false);
         canvas.addEventListener('endfullscreen', endFullscreen , false)
@@ -845,6 +822,18 @@ function createFullscreenCanvas() {
     canvasFullscreen.style.display = "none";
     //canvasFullscreen.style.zIndex = "1";  
     $("body").append(canvasFullscreen);
+    var timeoutIdentifier;
+    var fullscreenControlListener = function (e) {
+        $("#fullscreen-controls-id").slideDown(200);
+        
+        if (timeoutIdentifier) {
+            clearTimeout(timeoutIdentifier);
+        }
+        timeoutIdentifier = setTimeout(function () {
+            $("#fullscreen-controls-id").slideUp(200);
+        }, 2500);
+    }
+   // canvasFullscreen.addEventListener("mousemove", fullscreenControlListener, false);
 }
 
 
@@ -853,11 +842,10 @@ function createFullscreenCanvas() {
 //=============================================================================
 
 function initializeEventListener() {
-    $(".load-normal-display").mousedown(function (e) {
-        var inputFile = document.getElementById('input-video-normal-display');
+    $(".load-picture").mousedown(function (e) {
+        var inputFile = document.getElementById('input-picture');
         var fileUrl = window.URL.createObjectURL(inputFile.files[0]);
-        
-        askServerLoadVideoNormalDisplay(fileUrl);
+        askServerLoadPicture(fileUrl);
     });
     
     $(".load-tiled-display").mousedown(function (e) {
@@ -887,7 +875,6 @@ function initializeEventListener() {
     });
     
     $(".display").on("touchstart click", "label.icon-close", function (e) {
-        console.log("TAP")
         e.preventDefault();
         e.currentTarget.parentElement.parentElement.parentElement.parentElement.removeChild(e.currentTarget.parentElement.parentElement.parentElement);
     });
@@ -912,15 +899,52 @@ function initializeEventListener() {
             askRemoteGameControl(windowId, "ping-pong", "tiled-display", "", "all");
         }
         else {
-            askRemoteMediaControl(windowId, windowList[windowId].type, "tiled-display", infos.position, "all");
+            askRemoteMediaControl(windowId, "all", "tiled-display", infos.position, "all");
         }
     });
     
-    $(".display").on("touchstart mousedown", "label.icon-rotation", function (e) {
-        e.preventDefault();
-        
+    interact('.icon-rotation').on('hold', function (event) {
+        event.preventDefault();
+        var windowId = event.currentTarget.parentElement.parentElement.parentElement.id.split('window')[1];
+        if (windowList[windowId].modificationType == "dragging") {
+           
+            $.pep.unbind($("#" + event.currentTarget.parentElement.parentElement.parentElement.id));
+            windowList[windowId].modificationType = "rotation";
+            event.currentTarget.style.background = '#FDB813';
+            event.currentTarget.innerHTML = "R";
+        }
+
+        else {
+            windowList[windowId].modificationType = "dragging";
+            event.currentTarget.style.background = '#39D2B4';
+            event.currentTarget.innerHTML = "M";
+        }
     });
     
+    interact('.icon-rotation').on('doubletap', function (event) {
+        event.stopPropagation();
+        var windowId = event.currentTarget.parentElement.parentElement.parentElement.id.split('window')[1];
+        if (windowList[windowId].modificationType == "dragging") {
+            windowList[windowId].modificationType = "resize";
+            event.currentTarget.style.background = '#68217A';
+            event.currentTarget.innerHTML = "S";
+        }
+        else {
+            windowList[windowId].modificationType = "dragging";
+            event.currentTarget.style.background = '#39D2B4';
+            event.currentTarget.innerHTML = "M";
+        }
+    });   
+    
+    interact('.window-header').on('doubletap', function (event) {
+        console.log("HEADER DT")
+        event.preventDefault();
+        var windowId = event.currentTarget.parentElement.id.split('window')[1];
+        askWindowRotation(windowId, -windowList[windowId].angle);
+        
+    })
+    
+
     $(".display").on("touchmove", function (e) {
         e.preventDefault();
     });
@@ -958,6 +982,20 @@ var s = document.createElement('style'),
     styles = [], 
     pp = ['-webkit-slider-runnable-', '-moz-range-'],
     n_pp = pp.length;
+
+updatePrograssFillBar = function (seekBar, id){
+    if (seekBar.classList.contains('fill')) {
+        styles[id] = getFillStyle(seekBar);
+    }
+    else {
+        styles[id] = '';
+    }
+    if (seekBar.classList.contains('tip')) {
+        styles[id] += getTipStyle(seekBar);
+    }
+    s.textContent = styles.join('');
+}
+
 
 manageControlBar = function () {
     document.getElementsByTagName('body')[0].appendChild(s);

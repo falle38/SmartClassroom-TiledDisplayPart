@@ -1,6 +1,36 @@
 //=============================================================================
 // LOAD VIDEO AND SHARE IT TO OTHER CLIENTS
 //=============================================================================
+function loadPicture(windowId, url) {
+    
+    var img = new Image();
+    img.src = url;
+    // when the image loaded, draw the image on HTML5 canvas
+    img.addEventListener("load", function () {
+        var data = { "masterPosition": infos.position, "image": this }
+        var canvas = createCanvas(windowId, "IMAGE", 400, 300, "picture", true, true, data);
+        
+        var backing_canvas = document.getElementById("backing_" + canvas.id);
+        backing_canvas.height = this.height;
+        backing_canvas.width = this.width;
+        var backing_context = backing_canvas.getContext('2d');
+        backing_context.drawImage(img, 0, 0, this.width, this.height, 0, 0, this.width, this.height);
+        
+        //var context = canvas.getContext('2d');
+        //context.drawImage(backing_canvas, 0, 0, canvasToDraw.width, canvasToDraw.height); 
+        //var data = { "image": this};
+        //Send data to other clients without data of picture
+        data = { "masterPosition": infos.position}
+        shareMediaDisplay(windowId, "picture", "IMAGE", false, data);
+        shareImage(windowId, backing_canvas.toDataURL("image/jpeg"));
+
+    });
+}
+
+
+//=============================================================================
+// LOAD VIDEO AND SHARE IT TO OTHER CLIENTS
+//=============================================================================
 function loadVideoTiledDisplay(windowId, url) {
     var video = document.createElement('video');
     video.id = "video" + windowId;
@@ -89,6 +119,5 @@ function loadSharedWindow(windowId) {
     //        windowRotation(windowId, 180);
     //    }
     //}
-    shareWindow(windowId, "SHARED TEST", "shared");
-    
+    shareWindow(windowId, "SHARED TEST", "shared"); 
 }

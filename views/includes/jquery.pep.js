@@ -869,22 +869,32 @@
         upperYLimit = 1000000;     
             
         if (this.options.tablePosition.i == 0) {
-            upperXLimit = 0;
-            if (this.options.orientation == 'reversed') {
+            lowerXLimit = 0;
+                if (this.options.orientation == 'reversed') {
+                    lowerXLimit = -1000000;
                 upperXLimit = this.$container.width() - this.$el.outerWidth();
             }
         }
         if (this.options.tablePosition.j == 0) {
-            upperYLimit = 0;
+            lowerYLimit = 0;
             if (this.options.orientation == 'reversed') {
+                lowerYLimit = -1000000;
                 upperYLimit = this.$container.height() - this.$el.outerHeight();
-            } 
+        } 
         }
         if (this.options.tablePosition.i == this.options.maxPosition.i) {
                 upperXLimit = this.$container.width() - this.$el.outerWidth();
+                if (this.options.orientation == 'reversed') {
+                    upperXLimit = 1000000;
+                    lowerXLimit = 0;
+                } 
         }
         if (this.options.tablePosition.j == this.options.maxPosition.j) {
                 upperYLimit = this.$container.height() - this.$el.outerHeight();
+                if (this.options.orientation == 'reversed') {
+                    upperYLimit = 1000000;
+                    lowerYLimit = 0;
+                } 
         }
 
 

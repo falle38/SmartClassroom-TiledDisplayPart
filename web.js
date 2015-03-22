@@ -176,6 +176,18 @@ everyone.now.askWindowRotation = function (windowId, degree) {
     everyone.now.windowRotation(windowId, degree);
 };
 
+// called from client - just execute one client context (host)
+everyone.now.shareWindowAngle = function (windowId, positionRemoteClient, degree) {
+    // update the data to the other clients other than host
+    hosts[windowId].group.now.updateWindowAngle(windowId, positionRemoteClient, degree);
+};
+
+// called from client - just execute one client context (host)
+everyone.now.shareWindowSize = function (windowId, event) {
+    // update the data to the other clients other than host
+    hosts[windowId].group.now.resizeWindow(windowId, event);
+};
+
 
 //=============================================================================
 // SHARE MEDIA WINDOW : (VIDEO, PDF, APPS ETC...)
@@ -279,10 +291,10 @@ sendAudioDataToStreamList = function (data) {
 // called from client - just execute one client context (host)
 everyone.now.askRemoteMediaControl = function (windowId, mediaType, controlType, value, destination) {
     if (destination == "all") {
-        everyone.now.remoteMediaControl(windowId, mediaType, controlType, value);
+        hosts[windowId].group.now.remoteMediaControl(windowId, mediaType, controlType, value);
     }
     else if (destination == "except-host") {
-        everyone.now.filterRemoteMediaControl(windowId, mediaType, controlType, value, this.now.id);
+        hosts[windowId].group.now.filterRemoteMediaControl(windowId, mediaType, controlType, value, this.now.id);
     }
     else if(destination == "master"){
         clientList[hosts[windowId].client].object.now.remoteMediaControl(windowId, mediaType, controlType, value);
@@ -317,10 +329,10 @@ everyone.now.askSwitchToNormalDisplay = function (windowId) {
 // called from client - just execute one client context (host)
 everyone.now.askRemoteGameControl = function (windowId, game, controlType, value, destination) {
     if (destination == "all"){
-        everyone.now.remoteGameControl(windowId, game, controlType, value, this.now.id);
+        hosts[windowId].group.now.remoteGameControl(windowId, game, controlType, value, this.now.id);
     }
     else if (destination == "except-host") {
-        everyone.now.filterRemoteGameControl(windowId, game, controlType, value, this.now.id);
+        hosts[windowId].group.now.filterRemoteGameControl(windowId, game, controlType, value, this.now.id);
     }
     else if (destination == "master") {
         clientList[hosts[windowId].client].object.now.remoteGameControl(windowId, game, controlType, value);

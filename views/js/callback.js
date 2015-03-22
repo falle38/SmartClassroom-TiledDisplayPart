@@ -54,11 +54,11 @@ $(document).ready(function () {
     //=============================================================================
 
     launchWindow = function (windowId, type, url) {
-        if (type == "video-tiled") {
-            loadVideoTiledDisplay(windowId, url);
+        if (type == "picture") {
+            loadPicture(windowId, url)
         }
-        else if (type == "video-normal") {
-            loadVideoNormalDisplay(windowId, url)
+        else if (type == "video-tiled") {
+            loadVideoTiledDisplay(windowId, url);
         }
         else if (type == "pdf") {
             loadPdf(windowId, url);
@@ -81,7 +81,7 @@ $(document).ready(function () {
         var rows = 2;
         if (infos.position.j <= ((rows / 2) - 1)) {
             if (!windowList[windowId].isRotated) {
-                windowRotation(windowId, 180);
+                windowRotation(windowId, 90);
             }
         }
     };
@@ -94,7 +94,8 @@ $(document).ready(function () {
             window.style.removeProperty('-webkit-transition');
             window.style.removeProperty('transition');
         }
-        
+        var isInTheDisplay = false;
+        if (window.style.left >= 0 || window.style.left + window.clientWidth <= width || window.style.top >= 0 || window.style.top + window.clientHeight <= height) isInTheDisplay = true;
         var width = $('div.display').width();
         var height = $('div.display').height();
         var windowWidth = $('#window' + windowId).width();
@@ -135,15 +136,21 @@ $(document).ready(function () {
                 top = height - top;
             }
         }
+        console.log(left)
+        console.log(left + window.clientWidth)
+        console.log(top)
+        console.log(top + window.clientHeight)
+        //if (isInTheDisplay && (left < 0 || left + window.clientWidth > width || top < 0 || top + window.clientHeight > height )) return;
+
         window.style.top = top + "px";
         window.style.left = left + "px";
         
         //If the window is on the display
         //if (left >= 0 && left <= width && top >= 0 && top <= height && (left + windowWidth) >= 0 && (left + windowWidth) <= width && (top + windowHeight) >= 0 && (top + windowHeight) <= height) {
         if (left >= (0 + 20) && left <= (width - 20) && top >= (0 + 20) && top <= (height - 20) && (left + windowWidth) >= (0 + 20) && (left + windowWidth) <= (width - 20) && (top + windowHeight) >= (0 + 20) && (top + windowHeight) <= (height - 20)) {
-            if (windowList[ windowId].isRotated &&  !isRotating) {
+            if (windowList[windowId].isRotated &&  !isRotating) {
                 console.log("DO ROTATION")
-                askWindowRotation(windowId, 180);
+                askWindowRotation(windowId, -windowList[windowId].angle);
             }
         }
     };
@@ -152,16 +159,76 @@ $(document).ready(function () {
     // the data is a base64-encoded image
     windowRotation = function (windowId, degree) {
         var window = getWindow(windowId);
-        var angle = windowList[windowId].angle + degree;
+        var angle = (windowList[windowId].angle + degree)%360;
         windowList[windowId].angle = angle;
         isRotating = true;
-        setTimeout(function () { isRotating = false;}, 1000);
+        setTimeout(function () {isRotating = false;}, 1000);
         window.style.WebkitTransitionDuration = '1s';
         window.style.webkitTransform = 'rotate(' + angle + 'deg)';
         windowList[windowId].isRotated = !windowList[windowId].isRotated;
+    };
+    
+    // called from server - to update the image data just for this client page
+    // the data is a base64-encoded image
+    updateWindowAngle = function (windowId, positionRemoteClient, degree) {
+        var rows = 2;
+        var window = getWindow(windowId);
+        window.style.removeProperty('-webkit-transition');
+        window.style.removeProperty('transition');
+
+        var angle = (windowList[windowId].angle + degree)%360;
+        
+        //if (positionRemoteClient.j <= ((rows / 2) - 1)) {
+        //    //If the master client is not oriented like this client
+        //    if (infos.position.j > ((rows / 2) - 1)) {
+        //        //We do the rotation in the opposite direction
+        //        angle = (windowList[windowId].angle + degree)% 360;
+        //    }  
+        //}
+        //else {
+        //    //If the master client is not oriented like this client
+        //    if (infos.position.j <= ((rows / 2) - 1)) {
+        //        //We do the rotation in the opposite direction
+        //        angle = (windowList[windowId].angle + degree)% 360;
+        //    }
+        //}
+        windowList[windowId].angle = angle;
+        window.style.webkitTransform = 'rotate(' + angle + 'deg)';
+    };
+    
+    // called from server - to update the image data just for this client page
+    // the data is a base64-encoded image
+    resizeWindow = function (windowId, event) {
+        var window = getWindow(windowId);
+        window.style.removeProperty('-webkit-transition');
+        window.style.removeProperty('transition');
+        
+    
         
 
+        var deltaHeight = event.rect.height - window.clientHeight;
+        // update the element's style
+        window.style.width = event.rect.width + 'px';
+        window.style.height = event.rect.height + 'px';
+        
+        // translate when resizing from top or left edges
+        windowList[windowId].offset.x += event.deltaRect.left;
+        windowList[windowId].offset.y += event.deltaRect.top;
+        window.style.transform = ('translate(' 
+                              + windowList[windowId].offset.x + 'px,' 
+                              + windowList[windowId].offset.y + 'px)');
 
+        var windowFormDiv = window.getElementsByClassName('window-form')[0];
+        var canvas = document.getElementById("canvas" + windowId);
+        canvas.width = windowFormDiv.clientWidth;
+        
+        if (deltaHeight >= 0) {
+            canvas.height = windowFormDiv.clientHeight;
+        }
+        else {
+            canvas.height = windowFormDiv.clientHeight - 4;
+        }
+        reloadCanvas(canvas);
     };
 
     //=============================================================================
@@ -172,7 +239,12 @@ $(document).ready(function () {
         console.log("LAUNCHING");
         rows = 2;
         if (type == "ping-pong") {
-            launchPingPongGame(windowId, false);
+            if ((data.masterPosition.i == infos.position.i)) {
+                launchPingPongGame(windowId, false);
+            }
+            else {
+                return;
+            }
         }
         else {
             createCanvas(windowId, title, 400, 300, type, false, true, data);
@@ -346,8 +418,8 @@ $(document).ready(function () {
     // REMOTE CONTROL FOR SYNCHRONIZING MEDIA OF CLIENTS
     //=============================================================================
     
-    remoteMediaControl = function (windowId, mediaType, controlType, value) { 
-        if (mediaType == "video") {
+    remoteMediaControl = function (windowId, mediaType, controlType, value) {
+        if (mediaType == "all") {
             if (controlType == "tiled-display") {
                 var canvas = document.getElementById("canvas" + windowId);
                 windowList[windowId].data.masterPosition = value;
@@ -355,9 +427,16 @@ $(document).ready(function () {
                 //updateCanvas(windowId, canvas.toDataURL("image/jpeg"))
                 fullWindow(canvas);
             }
-            else if (controlType == "seekbar") {
-                    var video = document.getElementById('video' + windowId)
-                    video.currentTime = (value * video.duration) / 100;
+            else if (controlType == "endfullscreen") {
+                var canvas = document.getElementById('canvas' + windowId);
+                windowList[windowId].isTiled = false;
+                canvas.dispatchEvent(eventEndFullscreen);
+            }
+        }
+        else if (mediaType == "video") {
+           if (controlType == "seekbar") {
+                var video = document.getElementById('video' + windowId)
+                video.currentTime = (value * video.duration) / 100;
             }
             else if (controlType == "play") {
                 if (value == "event") {
@@ -392,11 +471,6 @@ $(document).ready(function () {
                 var canvas = document.getElementById("canvas" + windowId);
                 windowList[windowId].data.currentTime = value.currentTime;
                 canvas.dispatchEvent(eventTimeUpdate);
-            }
-            else if (controlType == "endfullscreen") {
-                var canvas = document.getElementById('canvas' + windowId);
-                windowList[windowId].isTiled = false;
-                canvas.dispatchEvent(eventEndFullscreen);
             }
         }
         else if (mediaType == "pdf") {
@@ -473,12 +547,7 @@ $(document).ready(function () {
                     var eventNext = new Event('next');
                     next.dispatchEvent(eventNext);
                 }
-            }
-            else if (controlType == "endfullscreen") {
-                var canvas = document.getElementById('canvas' + windowId);
-                windowList[windowId].isTiled = false;
-                canvas.dispatchEvent(eventEndFullscreen);
-            }
+            }   
         }
     }
     
@@ -526,16 +595,22 @@ $(document).ready(function () {
                 var x = (value.x * windowList[windowId].data.game.W) / value.W;
                 windowList[windowId].data.game.movePaddle(value.id, windowList[windowId].data.game.W - windowList[windowId].data.game.paddles[value.id].w - x);
             }
+            else if (controlType == "increasePoints") {
+                windowList[windowId].data.game.increasePoints();
+            }
+            else if (controlType == "gameOver") {
+                windowList[windowId].data.game.gameOver(windowList[windowId].data.game.canvas);
+            }
             else if (controlType == "tiled-display") {
                 windowList[windowId].isTiled = true;
-                windowList[windowId].data.game.launchFullScreen();
-                
+                windowList[windowId].data.game.launchFullScreen();  
             }
             else if (controlType == "endfullscreen") {
                 var eventEndFullscreen = new Event('endfullscreen');
                 var canvas = document.getElementById('canvas' + windowId);
-                canvas.dispatchEvent(eventEndFullscreen);
                 windowList[windowId].isTiled = false;
+                canvas.dispatchEvent(eventEndFullscreen);
+                
             }
         }
     }
