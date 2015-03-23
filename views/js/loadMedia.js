@@ -23,6 +23,9 @@ function loadPicture(windowId, url) {
         data = { "masterPosition": infos.position}
         shareMediaDisplay(windowId, "picture", "IMAGE", false, data);
         shareImage(windowId, backing_canvas.toDataURL("image/jpeg"));
+        var width = $('div.display').width();
+        var height = $('div.display').height();
+        shareWindowPosition(windowId, infos.position, 25, 25, width, height);
 
     });
 }
@@ -48,7 +51,11 @@ function loadVideoTiledDisplay(windowId, url) {
        var canvas = createCanvas(windowId, "VIDEO", 400, 300,"video",true, true, data);
        var ctx = canvas.getContext('2d');
        ctx.drawImage(this, 0, 0, this.videoWidth, this.videoHeight);
-        shareMediaDisplay(windowId, "video", "VIDEO",false, data);
+        shareMediaDisplay(windowId, "video", "VIDEO", false, data);
+        shareImage(windowId, canvas.toDataURL("image/jpeg"));
+        var width = $('div.display').width();
+        var height = $('div.display').height();
+        shareWindowPosition(windowId, infos.position, 25, 25, width, height);
     });
 }
 
@@ -71,6 +78,9 @@ function loadPdf(windowId, url) {
         //We send data to clients without the pdf object
         data = { "masterPosition": infos.position, "currentPosition": 1, "total": pdf.numPages };
         shareMediaDisplay(windowId, "pdf", "PDF", false, data);
+        var width = $('div.display').width();
+        var height = $('div.display').height();
+        shareWindowPosition(windowId, infos.position, 25, 25, width, height);
         //Load the first page
         loadPdfPage(windowId, 1);
     });
@@ -119,5 +129,8 @@ function loadSharedWindow(windowId) {
     //        windowRotation(windowId, 180);
     //    }
     //}
-    shareWindow(windowId, "SHARED TEST", "shared"); 
+    shareWindow(windowId, "SHARED TEST", "shared");
+    var width = $('div.display').width();
+    var height = $('div.display').height();
+    shareWindowPosition(windowId, infos.position, 25, 25, width, height);
 }

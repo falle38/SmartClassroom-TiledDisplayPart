@@ -162,11 +162,28 @@ position: relative;
   
 }
 
-.icon-rotation:hover {
-  background: #3965B3;
-  color: #fff;
-  text-decoration: none;
+.icon-resize {
+  
+position: relative;
+  /*width: 23px;*/
+  height: 22px;
+  line-height: 22px;
+  text-align:center;
+  color:#ffffff;
+  font-size:20px;
+  float: right;
+
+  font-family: Arial;
+  background: #39D2B4;
+  -webkit-border-radius: 0;
+  -moz-border-radius: 0;
+  border-radius: 0px;
+  transition: all .4s;
+  padding: 0px 14px 0px 14px;
+  margin-right:5px;
+  
 }
+
 .window-form {
     /*border-radius: 0px 0px 9px 10px; 
 -moz-border-radius: 0px 0px 9px 10px; 

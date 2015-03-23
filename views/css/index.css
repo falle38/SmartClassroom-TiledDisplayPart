@@ -11,16 +11,16 @@ html,body{
     height: 100%;
 }
 
+.container {
+	overflow: hidden;
+	background: #34495e;
+}
+
  .container, .scroller{
     position: relative;
 	height: 100%;
-
-    
 }
 
-/*.scroller {
-	overflow-y: scroll;
-}*/
 
 
 .display {
@@ -28,13 +28,6 @@ position: relative;
 overflow:hidden;
 height:calc( 100% - 24px );
 background: #EEEEF2;
-}
-
-
-.container {
-	
-	overflow: hidden;
-	background: #34495e;
 }
 
 .menu-trigger {

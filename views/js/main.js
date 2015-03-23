@@ -60,6 +60,10 @@ function addWindow(windowId, title, width, height, type, isShared) {
     iconRotation.className = 'icon-rotation';
     iconRotation.innerHTML = "M";
     
+    var iconResize = document.createElement('label');
+    iconResize.className = 'icon-resize';
+    iconResize.innerHTML = "S";
+    
     //CREATE CLOSE ICON
     var iconClose = document.createElement('label');
     iconClose.className = 'icon-close';
@@ -77,6 +81,7 @@ function addWindow(windowId, title, width, height, type, isShared) {
     
     toolbar.appendChild(iconClose);
     toolbar.appendChild(iconRotation);
+    toolbar.appendChild(iconResize);
     
     //ADD TOOLBAR AND TITLE INTO WINDOW HEADER
     windowHeader.appendChild(toolbar);
@@ -85,6 +90,7 @@ function addWindow(windowId, title, width, height, type, isShared) {
     //CREATE WINDOW DIV FOR DISPLAYING
     var windowFormDiv = document.createElement('div');
     windowFormDiv.className = 'window-form';
+    windowFormDiv.id = 'windowForm' + windowId;
     //windowFormDiv.innerHTML = "Content";
     //windowFormDiv.style.height = '100% - 50px';
     //windowFormDiv.style.height = height + 'px';
@@ -98,28 +104,37 @@ function addWindow(windowId, title, width, height, type, isShared) {
     display.appendChild(windowDiv);
     
     //MANAGE DRAG AND DROP FOR MOUSE
-    $("#window-header" + windowId).mousedown(function (e) {
+    $("#" + windowHeader.id).on("mousedown touchstart", function (e) {
         var orientation = 'normal'
         var rows = 2;
         if (infos.position.j <= ((rows / 2) - 1)) {
             orientation = 'reversed'
         }
+        var maxPosition;
+        if (isShared) {
+            maxPosition = { "i": (2 - 1), "j": (2 - 1) };
+        }
+        else {
+            maxPosition = 'none';
+            orientation = 'normal';
+        }
+        
         if (windowList[windowId].modificationType != "dragging") return;
         var isRotating = false;
-        $("#" + e.currentTarget.parentElement.id).pep({
+        $("#" + windowDiv.id).pep({
             constrainTo: 'parent',
+            velocityMultiplier: 5,
             tablePosition: infos.position,
-            maxPosition: { "i": (2 - 1), "j": (2 - 1) },
+            maxPosition: maxPosition,
             orientation: orientation,
             rotation : isRotated,
             start: function (ev, obj) {
                 if (notHead) {
-                    $.pep.unbind($("#" + e.currentTarget.parentElement.id));
+                    $.pep.unbind($("#" + windowDiv.id));
                 }
                 //obj.$el.css({ background : 'red'});
             },
             drag: function (ev, obj) {
-                
                 var width = $('div.display').width();
                 var height = $('div.display').height();
                 var top = obj.$el.context.offsetTop;
@@ -162,94 +177,55 @@ function addWindow(windowId, title, width, height, type, isShared) {
                     console.log("TABLE SUIVANTE");
                     //obj.$el.css({ background : 'green'}); 
                 }
-                $.pep.unbind($("#" + e.currentTarget.parentElement.id));
+                $.pep.unbind($("#" + windowDiv.id));
             }
         });
     });
-    
-    //MANAGE DRAG AND DROP FOR MOUSE
-    $("#window-header" + windowId).on("touchstart", function (e) {
-        console.log("Touch Event")
-        e.preventDefault();
-        if (windowList[windowId].modificationType != "dragging") return;
-        $("#" + e.currentTarget.parentElement.id).pep({
-            // constrainTo: 'parent',
-            rotation : isRotated,
-            velocityMultiplier: 5,
-            start: function (ev, obj) {
-                if (notHead) {
-                    $.pep.unbind($("#" + e.currentTarget.parentElement.id));
-                }
-                //obj.$el.css({ background : 'red'});
-            },
-            drag: function (ev, obj) {
-                
-                var width = $('div.display').width();
-                var height = $('div.display').height();
-                if (isShared) {
-                    shareWindowPosition(windowId, infos.position, obj.$el.context.offsetTop, obj.$el.context.offsetLeft, width, height);
-                    //if (isRotated) {
-                    //    now.shareWindowPosition(windowId, infos.orientation, height - obj.$el.context.offsetTop, width - obj.$el.context.offsetLeft, width, height);
-                        
-                    //}
-                    //else {
-                    //    now.shareWindowPosition(windowId, infos.orientation, obj.$el.context.offsetTop, obj.$el.context.offsetLeft, width, height);
-                    //}
-                }
-            },
-            
-            easing: function (ev, obj) {
-                var width = $('div.display').width();
-                var height = $('div.display').height();
-                
-                if (isShared) {
-                    shareWindowPosition(windowId, infos.position, obj.$el.context.offsetTop, obj.$el.context.offsetLeft, width, height);
-                    //if (isRotated) {
-                    //    now.shareWindowPosition(windowId, infos.orientation, height - obj.$el.context.offsetTop, width - obj.$el.context.offsetLeft, width, height);
-                        
-                    //}
-                    //else {
-                    //    now.shareWindowPosition(windowId, infos.orientation, obj.$el.context.offsetTop, obj.$el.context.offsetLeft, width, height);
-                    //}
-                }
-            },
-            stop: function (ev, obj) {
-                var vel = obj.velocity();
-                //console.log(vel);
-                
-                if (vel.x > 1500 || vel.y > 1500 || vel.x < -1500 || vel.y < -1500) {
-                    console.log("TABLE SUIVANTE");
-                    //obj.$el.css({ background : 'green'}); 
-                }
-                $.pep.unbind($("#" + e.currentTarget.parentElement.id));
-            }
-        });
+    //The window is oriented with 0 degree of rotation
+    $("#" + windowHeader.id).dblclick(function (event) {
+        var windowId = windowDiv.id.split('window')[1];
+        askWindowRotation(windowId, -windowList[windowId].angle);
+        
+    });
+    //The window is oriented with 0 degree of rotation
+    jester(windowHeader).doubletap(function (event) {
+        var windowId = windowDiv.id.split('window')[1];
+        askWindowRotation(windowId, -windowList[windowId].angle);
+        
     });
     
-    var offset = { x: 0, y: 0 };
     
     interact('.window')
-  .resizable({
-        edges: { left: false, right: true, bottom: true, top: false }
+    .resizable({
+        edges: { left: true, right: true, bottom: true, top: true }
     })
-  .on('resizemove', function (event) {
+    .on('resizemove', function (event) {
         if (windowList[windowId].modificationType != "resize") return;
         var rect = { "height" : event.rect.height, "width": event.rect.width }
         var delta = { "left" : event.deltaRect.left, "top": event.deltaRect.top }
         var e = { "rect" : rect, "deltaRect": delta }
-        shareWindowSize(windowId, e);
+        if (windowList[windowId].isShared) {
+            //Resize all windows with ID windowId
+            shareWindowSize(windowId, e);
+        }
+        else {
+            //Resize this window
+            resizeWindow(windowId, e);
+        }
     });
-
-
+    
     
     interact(windowDiv).gesturable({
         onmove: function (event) {
             if (windowList[windowId].modificationType != "rotation") return;
-            //scale = scale * (1 + event.ds);
-            //windowDiv.style.webkitTransform = windowDiv.style.transform = 'scale(' + scale + ')';
-            //angle += event.da;
-            shareWindowAngle(windowId, infos.position, event.da);
-                //windowDiv.style.webkitTransform = windowDiv.style.transform = windowDiv.style.transform + ' rotate(' + angle + 'deg)';
+            if (windowList[windowId].isShared) {
+                //Rotate all windows with ID windowId
+                shareWindowAngle(windowId, infos.position, event.da);
+            }
+            else {
+                //Rotate this window
+                updateWindowAngle(windowId, infos.position, event.da);
+            }
         }
     });
     return windowDiv;
@@ -311,7 +287,7 @@ function createCanvas(windowId, title, width, height, type, isMaster, isShared, 
     windowDiv.getElementsByClassName('window-form')[0].appendChild(canvas);
     windowDiv.getElementsByClassName('window-form')[0].appendChild(backing_canvas);
     
-    var media = { "modificationType" : "dragging", "offset" : {"x":0,"y":0}, "type": type, "isTiled": false, "isRotated": false, "angle": 0, "isMaster": isMaster, "data": data}
+    var media = { "modificationType" : "dragging", "offset" : { "x": 0, "y": 0 }, "type": type, "isTiled": false, "isRotated": false, "angle": 0, "isMaster": isMaster, "data": data }
     windowList[windowId] = media;
     
     if (type == "video") {
@@ -378,8 +354,8 @@ function reloadCanvas(canvas) {
 }
 
 function fitCanvasToContainer(canvas) {
-        // ...then set the internal size to match
-        canvas.width = canvas.parentElement.offsetWidth;
+    // ...then set the internal size to match
+    canvas.width = canvas.parentElement.offsetWidth;
     canvas.height = canvas.parentElement.offsetHeight;
 }
 
@@ -440,14 +416,14 @@ function createVideoControls(windowId, isFullscreen, isMaster) {
     seekBar.max = "100";
     styles.push('');
     updatePrograssFillBar(seekBar, ID);
-
+    
     // Case isFullscreen : The event listener will be set outside this function to remove it easily
     if (isMaster && !isFullscreen) {
         video.addEventListener("timeupdate", function () {
             var data = { "duration": video.duration, "currentTime": video.currentTime };
             askRemoteMediaControl(windowId, "video", "currentTime", data, "except-host");
             seekBar.value = ((100 * video.currentTime) / video.duration);
-            document.getElementById('video-currentTime' + ID).innerHTML = Math.round(video.currentTime / 60) + ":" + (Math.round(video.currentTime) % 60).toString().replace(/^(\d)$/, '0$1'); 
+            document.getElementById('video-currentTime' + ID).innerHTML = Math.round(video.currentTime / 60) + ":" + (Math.round(video.currentTime) % 60).toString().replace(/^(\d)$/, '0$1');
             updatePrograssFillBar(seekBar, ID);
         }, false);
     }
@@ -468,7 +444,7 @@ function createVideoControls(windowId, isFullscreen, isMaster) {
         else {
             askRemoteMediaControl(windowId, "video", "seekbar", this.value, "master");
         }
-       updatePrograssFillBar(seekBar, ID);
+        updatePrograssFillBar(seekBar, ID);
     }, false);
     
     play.addEventListener('mousedown', function () {
@@ -544,7 +520,7 @@ function createPdfControls(windowId, isFullscreen, isMaster) {
     seekBar.max = data.total - 1;
     styles.push('');
     updatePrograssFillBar(seekBar, ID);
-
+    
     seekBar.addEventListener('input', function () {
         if (isMaster) {
             loadPdfPage(windowId, parseInt(this.value) + 1);
@@ -785,7 +761,6 @@ function fullWindow(canvas) {
             fullscreenButton.removeEventListener("mousedown", askEndFullscreen, false);
             canvas.removeEventListener("endfullscreen", endFullscreen, false);
             canvas.removeEventListener("draw", listener, false);
-            
         }
         var askEndFullscreen = function (e) {
             askRemoteMediaControl(windowId, "all", "endfullscreen", "", "all");
@@ -833,7 +808,7 @@ function createFullscreenCanvas() {
             $("#fullscreen-controls-id").slideUp(200);
         }, 2500);
     }
-   // canvasFullscreen.addEventListener("mousemove", fullscreenControlListener, false);
+    canvasFullscreen.addEventListener("mousemove", fullscreenControlListener, false);
 }
 
 
@@ -845,21 +820,25 @@ function initializeEventListener() {
     $(".load-picture").mousedown(function (e) {
         var inputFile = document.getElementById('input-picture');
         var fileUrl = window.URL.createObjectURL(inputFile.files[0]);
-        askServerLoadPicture(fileUrl);
+        if (fileUrl) {
+            askServerLoadPicture(fileUrl);
+        }
     });
     
     $(".load-tiled-display").mousedown(function (e) {
-        
         var inputFile = document.getElementById('input-video-tiled-display');
         var fileUrl = window.URL.createObjectURL(inputFile.files[0]);
-        askServerLoadVideoTiledDisplay(fileUrl);
+        if (fileUrl) {
+            askServerLoadVideoTiledDisplay(fileUrl);
+        }
     });
     
     $(".load-pdf").mousedown(function (e) {
-        
         var inputFile = document.getElementById('input-pdf');
         var fileUrl = window.URL.createObjectURL(inputFile.files[0]);
-        askServerLoadPdf(fileUrl);
+        //if (fileUrl) {
+            askServerLoadPdf(fileUrl);
+        //}
     });
     
     $(".load-shared-window").mousedown(function (e) {
@@ -870,13 +849,20 @@ function initializeEventListener() {
         askServerLoadPingPong();
     });
     
+    $(".load-drawing").mousedown(function (e) {
+        askServerLoadDrawing();
+    });
+    
     $(".rotate-display-div").mousedown(function (e) {
         rotateDisplayDiv();
     });
     
     $(".display").on("touchstart click", "label.icon-close", function (e) {
         e.preventDefault();
-        e.currentTarget.parentElement.parentElement.parentElement.parentElement.removeChild(e.currentTarget.parentElement.parentElement.parentElement);
+        //e.currentTarget.parentElement.parentElement.parentElement.parentElement.removeChild(e.currentTarget.parentElement.parentElement.parentElement);
+        
+        var windowId = e.currentTarget.parentElement.parentElement.parentElement.id.split('window')[1];
+        askCloseWindow(windowId);
     });
     
     $(".display").on("touchstart mousedown", "label.icon-fullscreen", function (e) {
@@ -903,48 +889,41 @@ function initializeEventListener() {
         }
     });
     
-    interact('.icon-rotation').on('hold', function (event) {
+    $(".display").on("touchstart mousedown", "label.icon-rotation", function (event) {
         event.preventDefault();
         var windowId = event.currentTarget.parentElement.parentElement.parentElement.id.split('window')[1];
-        if (windowList[windowId].modificationType == "dragging") {
-           
-            $.pep.unbind($("#" + event.currentTarget.parentElement.parentElement.parentElement.id));
-            windowList[windowId].modificationType = "rotation";
-            event.currentTarget.style.background = '#FDB813';
-            event.currentTarget.innerHTML = "R";
+        if (windowList[windowId].modificationType == "rotation") {
+            windowList[windowId].modificationType = "dragging";
+            this.style.background = '#39D2B4';
+            
         }
 
         else {
-            windowList[windowId].modificationType = "dragging";
-            event.currentTarget.style.background = '#39D2B4';
-            event.currentTarget.innerHTML = "M";
+            $.pep.unbind($("#" + event.currentTarget.parentElement.parentElement.parentElement.id));
+            windowList[windowId].modificationType = "rotation";
+            this.style.background = '#FDB813';
+            this.parentElement.getElementsByClassName('icon-resize')[0].style.background = '#39D2B4';
         }
     });
     
-    interact('.icon-rotation').on('doubletap', function (event) {
-        event.stopPropagation();
-        var windowId = event.currentTarget.parentElement.parentElement.parentElement.id.split('window')[1];
-        if (windowList[windowId].modificationType == "dragging") {
-            windowList[windowId].modificationType = "resize";
-            event.currentTarget.style.background = '#68217A';
-            event.currentTarget.innerHTML = "S";
-        }
-        else {
-            windowList[windowId].modificationType = "dragging";
-            event.currentTarget.style.background = '#39D2B4';
-            event.currentTarget.innerHTML = "M";
-        }
-    });   
-    
-    interact('.window-header').on('doubletap', function (event) {
-        console.log("HEADER DT")
+    $(".display").on("touchstart mousedown", "label.icon-resize", function (event) {
         event.preventDefault();
-        var windowId = event.currentTarget.parentElement.id.split('window')[1];
-        askWindowRotation(windowId, -windowList[windowId].angle);
-        
-    })
-    
+        var windowId = event.currentTarget.parentElement.parentElement.parentElement.id.split('window')[1];
+        if (windowList[windowId].modificationType == "resize") {
+            windowList[windowId].modificationType = "dragging";
+            this.style.background = '#39D2B4';
+            
+        }
 
+        else {
+            $.pep.unbind($("#" + event.currentTarget.parentElement.parentElement.parentElement.id));
+            windowList[windowId].modificationType = "resize";
+            this.style.background = '#68217A';
+            this.parentElement.getElementsByClassName('icon-rotation')[0].style.background = '#39D2B4';
+        }
+    });
+    
+    
     $(".display").on("touchmove", function (e) {
         e.preventDefault();
     });
@@ -983,7 +962,7 @@ var s = document.createElement('style'),
     pp = ['-webkit-slider-runnable-', '-moz-range-'],
     n_pp = pp.length;
 
-updatePrograssFillBar = function (seekBar, id){
+updatePrograssFillBar = function (seekBar, id) {
     if (seekBar.classList.contains('fill')) {
         styles[id] = getFillStyle(seekBar);
     }
@@ -1011,3 +990,13 @@ function formatage(nombre) {
     }
     return zero + nombre;
 }
+
+var removeMedia = function () {
+    _.each([$video, $audio], function ($media) {
+        if (!$media.length) return;
+        $media[0].pause();
+        $media[0].src = '';
+        $media.children('source').prop('src', '');
+        $media.remove().length = 0;
+    });
+};

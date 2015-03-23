@@ -863,44 +863,56 @@
 
         } else if (typeof this.options.constrainTo === 'string') {
                 
-        lowerXLimit = -1000000;
-        lowerYLimit = -1000000;
-        upperXLimit = 1000000;
-        upperYLimit = 1000000;     
             
-        if (this.options.tablePosition.i == 0) {
-            lowerXLimit = 0;
-                if (this.options.orientation == 'reversed') {
-                    lowerXLimit = -1000000;
+            if (this.options.maxPosition == 'none') {
+                lowerXLimit = 0;
+                lowerYLimit = 0;
                 upperXLimit = this.$container.width() - this.$el.outerWidth();
+                upperYLimit = this.$container.height() - this.$el.outerHeight();
             }
-        }
-        if (this.options.tablePosition.j == 0) {
-            lowerYLimit = 0;
-            if (this.options.orientation == 'reversed') {
-                lowerYLimit = -1000000;
-                upperYLimit = this.$container.height() - this.$el.outerHeight();
-        } 
-        }
-        if (this.options.tablePosition.i == this.options.maxPosition.i) {
-                upperXLimit = this.$container.width() - this.$el.outerWidth();
-                if (this.options.orientation == 'reversed') {
-                    upperXLimit = 1000000;
+            else {
+                
+                
+                
+                lowerXLimit = -this.$container.width();
+                lowerYLimit = -this.$container.height();
+                upperXLimit = (2 * this.$container.width()) - this.$el.outerWidth();
+                upperYLimit = (2 * this.$container.height()) - this.$el.outerHeight();
+                
+                if (this.options.tablePosition.i == 0) {
                     lowerXLimit = 0;
-                } 
-        }
-        if (this.options.tablePosition.j == this.options.maxPosition.j) {
-                upperYLimit = this.$container.height() - this.$el.outerHeight();
-                if (this.options.orientation == 'reversed') {
-                    upperYLimit = 1000000;
+                    if (this.options.orientation == 'reversed') {
+                        lowerXLimit = -this.$container.width();
+                        upperXLimit = this.$container.width() - this.$el.outerWidth();
+                    }
+                }
+                if (this.options.tablePosition.j == 0) {
                     lowerYLimit = 0;
-                } 
-        }
+                    if (this.options.orientation == 'reversed') {
+                        lowerYLimit = -this.$container.height();
+                        upperYLimit = this.$container.height() - this.$el.outerHeight();
+                    }
+                }
+                if (this.options.tablePosition.i == this.options.maxPosition.i) {
+                    upperXLimit = this.$container.width() - this.$el.outerWidth();
+                    if (this.options.orientation == 'reversed') {
+                        upperXLimit = 2 * this.$container.width() - this.$el.outerWidth();
+                        lowerXLimit = 0;
+                    }
+                }
+                if (this.options.tablePosition.j == this.options.maxPosition.j) {
+                    upperYLimit = this.$container.height() - this.$el.outerHeight();
+                    if (this.options.orientation == 'reversed') {
+                        upperYLimit = 2 * this.$container.height() - this.$el.outerHeight();
+                        lowerYLimit = 0;
+                    }
+                }
+            }
 
 
       // is our object trying to move outside lower X & Y limits?
-      if ( this.pos.x + dx < lowerXLimit )              hash.x = 0;
-      if ( this.pos.y + dy < lowerYLimit )              hash.y = 0;
+      if ( this.pos.x + dx < lowerXLimit )              hash.x = lowerXLimit;
+      if ( this.pos.y + dy < lowerYLimit )              hash.y = lowerYLimit;
     }
 
         // is our object trying to move outside upper X & Y limits?

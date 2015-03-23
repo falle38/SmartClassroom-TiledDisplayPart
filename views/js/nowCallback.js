@@ -32,6 +32,10 @@ function askServerLoadPingPong() {
     now.getWindowId("ping-pong");
 }
 
+function askServerLoadDrawing() {
+    now.getWindowId("drawing");
+}
+
 now.launchWindow = function (windowId, type, url) {
     launchWindow(windowId, type, url);
 };
@@ -89,15 +93,20 @@ now.resizeWindow = function (windowId, event) {
 // SHARE MEDIA WINDOW : (VIDEO, PDF, APPS ETC...)
 //=============================================================================
 
-
 shareMediaDisplay = function (windowId, type, title, isPlayingAudio, data) {
     now.shareMediaDisplay(windowId, type, title, isPlayingAudio, data);
 };
 
-// called from server - to update the image data just for this client page
-// the data is a base64-encoded image
 now.launchSharedMediaDisplay = function (windowId, type, title, data) {
     launchSharedMediaDisplay(windowId, type, title, data);
+};
+
+askCloseWindow = function (windowId) {
+    now.askCloseWindow(windowId);
+};
+
+now.closeWindow = function (windowId) {
+    closeWindow(windowId);
 };
 
 ReadyToReceiveMedia = function (windowId, type) {
@@ -107,8 +116,6 @@ ReadyToReceiveMedia = function (windowId, type) {
 ReadyToPlayAudio = function (windowId) {
     now.ReadyToPlayAudio(windowId);
 };
-
-
 
 //=============================================================================
 // STREAMING VIDEO AND AUDIO
@@ -131,14 +138,9 @@ streamAudioToClient = function (videoPath) {
     now.streamAudioToClient(videoPath);
 };
 
-now.playVideo = function () {
-    playVideo();
-};
-
 now.playAudio = function () {
     playAudio();
 };
-
 
 //=============================================================================
 // REMOTE CONTROL FOR SYNCHRONIZING MEDIA OF CLIENTS

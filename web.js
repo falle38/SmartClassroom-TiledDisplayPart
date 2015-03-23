@@ -1,6 +1,6 @@
 /**
- * Real Time Video Sharing built on nowJS and Node.JS
- * Author: fyhao
+ * Application web sharing built on nowJS and Node.JS
+ * Author: Adam Tiamiou and Benoit Perruche
  */
 
 // include utility library
@@ -27,22 +27,22 @@ var clientAudioStreamList = [];
 // handle main page, the client page
 app.get("/", function(req, res) {
     res.contentType("text/html");
-    res.send(util.template('index3'));
-});
-
-// handle host page, the page to do the main control
-app.get("/host", function(req, res) {
-    res.contentType("text/html");
-    res.send(util.template('host'));
+    res.send(util.template('index'));
 });
 
 app.get("/audio0", function (req, res) {
-    console.log("AUDIO_GET");
     clientAudioStreamList.push(res);
 });
 
 app.get("/audio1", function (req, res) {
-    console.log("AUDIO_GET");
+    clientAudioStreamList.push(res);
+});
+
+app.get("/audio2", function (req, res) {
+    clientAudioStreamList.push(res);
+});
+
+app.get("/audio3", function (req, res) {
     clientAudioStreamList.push(res);
 });
 
@@ -60,7 +60,7 @@ var key = 0;
 
 // to store each registered session name
 var clientList = new Object();
-
+// to store each registered session name
 var hosts = new Object();
 
 var orientation = new Object();
@@ -72,8 +72,6 @@ orientation["SE"] = false;
 
 //THE ID 0 IS RESERVED FOR FULLSCREEN CANVAS
 var nbWindow = 1;
-
-
 
 //=============================================================================
 // CALLBACK WHEN CLIENT IS CONNECTED
@@ -108,13 +106,7 @@ nowjs.on('connect', function () {
         if(!b){
             everyone.removeUser(this.user.clientId);
         }
-
-        //if (key == 2) {
-        //    everyone.now.playAudio();
-        //}
     }
-	
-
 });
 
 //=============================================================================
@@ -132,7 +124,7 @@ nowjs.on('disconnect', function() {
 //=============================================================================
 // CREATE MEDIA WINDOW : (VIDEO, PDF, APPS ETC...)
 //=============================================================================
-
+//called from client - create a window with a new ID
 everyone.now.getWindowId = function (type, url) {
     this.now.launchWindow(nbWindow, type, url);
     nbWindow++;
@@ -144,11 +136,10 @@ everyone.now.getWindowId = function (type, url) {
 
 // called from client - just execute one client context (host)
 everyone.now.shareWindow = function (windowId, title, type) {
-    // update the data to the other clients other than host
     everyone.now.filterShareWindow(windowId, title, type, this.now.id);
 };
 
-// called from client - just execute one client context (host)
+// called from everyone - everyone execute the function except the host
 everyone.now.filterShareWindow = function (windowId, title, type, hostId) {
     // update the data to the other clients other than host
     if (this.now.id == hostId) return;
@@ -179,13 +170,13 @@ everyone.now.askWindowRotation = function (windowId, degree) {
 // called from client - just execute one client context (host)
 everyone.now.shareWindowAngle = function (windowId, positionRemoteClient, degree) {
     // update the data to the other clients other than host
-    hosts[windowId].group.now.updateWindowAngle(windowId, positionRemoteClient, degree);
+    everyone.now.updateWindowAngle(windowId, positionRemoteClient, degree);
 };
 
 // called from client - just execute one client context (host)
 everyone.now.shareWindowSize = function (windowId, event) {
     // update the data to the other clients other than host
-    hosts[windowId].group.now.resizeWindow(windowId, event);
+    everyone.now.resizeWindow(windowId, event);
 };
 
 
@@ -207,20 +198,19 @@ everyone.now.shareMediaDisplay = function (windowId, type, title, isPlayingAudio
     everyone.count(countCallback);
     
     this.now.ReadyToReceiveMedia(windowId, type);
-    //var host = { "client": this.now.id, "nbCurrent": 0, "nbExpected": 1,"isPlayingAudio":isPlayingAudio ,"nbReadyAudio": 0, "nbReadyAudioExpected": 2 }
-    //hosts[windowId] = host;
-    //everyone.now.filterAskTiledDisplay(windowId, title, data);
 };
 
 // called from server - execute every client context, then we can do filtering
 everyone.now.filterLaunchSharedMediaDisplay = function (windowId, type, title, data) {
-    // by right, it will execute in every client context include host page, we need to filter out the host by delete its name
+    // by right, it will execute in every client context exclude host
     if (this.now.id == hosts[windowId].client) { return; console.log("HOST NOT READY"); }
-    // ok, now we call the client side update image method, to update the screen into HTML5 canvas
     this.now.launchSharedMediaDisplay(windowId, type, title, data);
 };
 
-
+// called from client - just execute one client context (host)
+everyone.now.askCloseWindow = function (windowId) { 
+    everyone.now.closeWindow(windowId);
+};
 
 everyone.now.ReadyToReceiveMedia = function (windowId, type) {
     hosts[windowId].nbCurrent++;
@@ -303,24 +293,10 @@ everyone.now.askRemoteMediaControl = function (windowId, mediaType, controlType,
 
 // called from server - execute every client context, then we can do filtering
 everyone.now.filterRemoteMediaControl = function (windowId, mediaType, controlType, value, clientId) {
-    // by right, it will execute in every client context include host page, we need to filter out the host by delete its name
+    // by right, it will execute in every client context exclude host
     if (this.now.id == clientId) {return;}
-    // ok, now we call the client side update image method, to update the screen into HTML5 canvas
     this.now.remoteMediaControl(windowId, mediaType, controlType, value);
 };
-
-// called from client - just execute one client context (host)
-everyone.now.askSwitchToTiledDisplay = function (windowId) {
-    // update the data to the other clients other than host
-    hosts[windowId].group.now.switchToTiledDisplay(windowId);
-};
-
-// called from client - just execute one client context (host)
-everyone.now.askSwitchToNormalDisplay = function (windowId) {
-    // update the data to the other clients other than host
-    hosts[windowId].group.now.switchToNormalDisplay(windowId);
-};
-
 
 //=============================================================================
 // REMOTE CONTROL FOR SYNCHRONIZING PING-PONG GAME BETWEEN CLIENTS

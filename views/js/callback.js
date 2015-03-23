@@ -69,6 +69,9 @@ $(document).ready(function () {
         else if (type == "ping-pong") {
             launchPingPongGame(windowId, true);
         }
+        else if (type == "drawing") {
+            launchDrawing(windowId, true);
+        }
         menu.trigger.dispatchEvent(eventCloseMenu);
     };
 
@@ -136,10 +139,6 @@ $(document).ready(function () {
                 top = height - top;
             }
         }
-        console.log(left)
-        console.log(left + window.clientWidth)
-        console.log(top)
-        console.log(top + window.clientHeight)
         //if (isInTheDisplay && (left < 0 || left + window.clientWidth > width || top < 0 || top + window.clientHeight > height )) return;
 
         window.style.top = top + "px";
@@ -196,16 +195,11 @@ $(document).ready(function () {
         window.style.webkitTransform = 'rotate(' + angle + 'deg)';
     };
     
-    // called from server - to update the image data just for this client page
-    // the data is a base64-encoded image
     resizeWindow = function (windowId, event) {
         var window = getWindow(windowId);
         window.style.removeProperty('-webkit-transition');
         window.style.removeProperty('transition');
         
-    
-        
-
         var deltaHeight = event.rect.height - window.clientHeight;
         // update the element's style
         window.style.width = event.rect.width + 'px';
@@ -214,14 +208,16 @@ $(document).ready(function () {
         // translate when resizing from top or left edges
         windowList[windowId].offset.x += event.deltaRect.left;
         windowList[windowId].offset.y += event.deltaRect.top;
-        window.style.transform = ('translate(' 
+        //if((windowList[windowId].offset.x != 0) || (windowList[windowId].offset.y != 0)) {
+            window.style.webkitTransform = 'rotate(' + windowList[windowId].angle + 'deg)' + ' translate(' 
                               + windowList[windowId].offset.x + 'px,' 
-                              + windowList[windowId].offset.y + 'px)');
+                              + windowList[windowId].offset.y + 'px)';
+        //}
+        
 
         var windowFormDiv = window.getElementsByClassName('window-form')[0];
-        var canvas = document.getElementById("canvas" + windowId);
+        var canvas = document.getElementById("canvas" + windowId);       
         canvas.width = windowFormDiv.clientWidth;
-        
         if (deltaHeight >= 0) {
             canvas.height = windowFormDiv.clientHeight;
         }
@@ -246,6 +242,9 @@ $(document).ready(function () {
                 return;
             }
         }
+        else if (type == "drawing") {
+                launchDrawing(windowId, false);
+        }
         else {
             createCanvas(windowId, title, 400, 300, type, false, true, data);
         }
@@ -260,18 +259,26 @@ $(document).ready(function () {
         ReadyToReceiveMedia(windowId, type);
     };
     
+    closeWindow = function (windowId) {  
+        if (windowList[windowId].type == "video" && windowList[windowId].isMaster ) {
+            var video = document.getElementById("video" + windowId);
+            video.parentElement.removeChild(video);
+        }
+        var window = getWindow(windowId);
+        window.parentElement.removeChild(window);
+        delete windowList[windowId];
+    };
+    
     //=============================================================================
     // STREAMING VIDEO AND AUDIO
     //=============================================================================
     
     broadcastVideo = function (windowId, isPlayingAudio) {
         //initializeAudioplayer(now.id, windowId);
-        console.log("READY");
         var canvas = document.createElement("canvas");
         var context = canvas.getContext('2d');
         // get HTML5 video handler
         var video = document.getElementById("video" + windowId);
-        console.log(video);
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         $(canvas).css("display", "none");
@@ -279,7 +286,6 @@ $(document).ready(function () {
         
         // trigger when the video is played
         video.addEventListener("play", function () {
-            console.log("DRAW");
             videoPlayed = true;
             // re adjust the canvas width and height based on the video's one...
             var w = video.videoWidth;
@@ -319,7 +325,6 @@ $(document).ready(function () {
     // called from server - to update the image data just for this client page
     // the data is a base64-encoded image
     updateCanvas = function (windowId, image) {
-        console.log("UPDATE CANVAS")
         var window = getWindow(windowId);
         var canvasToDraw = document.getElementById("canvas" + windowId);
         var draw = canvasToDraw.getContext('2d');
@@ -352,18 +357,6 @@ $(document).ready(function () {
                 tileHeight = Math.round(img.height / rows);
                 var tileCenterX = tileWidth / 2;
                 var tileCenterY = tileHeight / 2;
-                
-                //if (infos.orientation == "NE") {
-                //    tileX = tileX + tileWidth;
-                //}
-                //else if (infos.orientation == "SW") {
-                //    tileY = tileY + tileHeight;
-                //}
-                //else if (infos.orientation == "SE") {
-                //    tileX = tileX + tileWidth;
-                //    tileY = tileY + tileHeight;
-                //}
-
                 var i, j;
                 if (masterPosition.j > ((rows/2) - 1)) {
                     //SENS CARTESIEN NORMALE
@@ -380,18 +373,12 @@ $(document).ready(function () {
                 tileY = tileY + j * tileHeight;
                 if (j <= ((rows / 2) - 1)) {
                     if (!windowList[windowId].isRotated) {
-                        console.log("ROTATED CS")
-                        //draw.translate(canvasToDraw.width, canvasToDraw.height);
-                        //draw.rotate(180 * (Math.PI / 180));
                         windowList[windowId].isRotated = true;
                     }
                 }
             }
             else {
                 if (windowList[windowId].isRotated) {
-                    console.log("ROTATED CS")
-                    //draw.translate(canvasToDraw.width, canvasToDraw.height);
-                    //draw.rotate(180 * (Math.PI / 180));
                     windowList[windowId].isRotated = false;
                 }
             }
@@ -401,15 +388,6 @@ $(document).ready(function () {
             context.drawImage(img, tileX, tileY, tileWidth, tileHeight, 0, 0, img.width, img.height);
             draw.drawImage(backing_canvas, 0, 0, canvasToDraw.width, canvasToDraw.height);
             canvasToDraw.dispatchEvent(event);
-
-            //draw.drawImage(img, tileX, tileY, tileWidth, tileHeight, 0, 0, img.width, img.height);
-            //canvasToDraw.dispatchEvent(event);
-            //draw.drawImage(canvasToCopy, 0, 0);
-
-
-            //copy.drawImage(img, 0, 0);
-            //draw.drawImage(canvasToCopy, tileX, tileY, tileWidth, tileHeight, 0, 0, canvasToDraw.width, canvasToDraw.height);
-
         });
     };
     
@@ -424,7 +402,6 @@ $(document).ready(function () {
                 var canvas = document.getElementById("canvas" + windowId);
                 windowList[windowId].data.masterPosition = value;
                 windowList[windowId].isTiled = true;
-                //updateCanvas(windowId, canvas.toDataURL("image/jpeg"))
                 fullWindow(canvas);
             }
             else if (controlType == "endfullscreen") {
@@ -478,7 +455,6 @@ $(document).ready(function () {
                 var canvas = document.getElementById("canvas" + windowId);
                 windowList[windowId].data.masterPosition = value;
                 windowList[windowId].isTiled = true;
-                //updateCanvas(windowId, canvas.toDataURL("image/jpeg"))
                 fullWindow(canvas);
             }
             else if (controlType == "seekbar") {
@@ -561,17 +537,11 @@ $(document).ready(function () {
         var canvas = document.getElementById("canvas" + windowId);
         windowList[windowId].isTiled = false;
     }
-    
-
-    playVideo = function () {
-        document.getElementById("video").play();
-    };
 
     playAudio = function () {
         document.getElementById("audio").play();
         //audioplayer.toggle();
     };
-    
     
     //=============================================================================
     // REMOTE CONTROL FOR SYNCHRONIZING PING-PONG GAME BETWEEN CLIENTS
@@ -609,8 +579,19 @@ $(document).ready(function () {
                 var eventEndFullscreen = new Event('endfullscreen');
                 var canvas = document.getElementById('canvas' + windowId);
                 windowList[windowId].isTiled = false;
-                canvas.dispatchEvent(eventEndFullscreen);
-                
+                canvas.dispatchEvent(eventEndFullscreen);   
+            }
+        }
+        else if (game == "drawing") {
+            if (controlType == "paint") {
+                var app = windowList[windowId].data.game;
+                app.mouse.x = value.x;
+                app.mouse.y = value.y;
+                app.paint(app.canvas, app.mouse.x, app.mouse.y, value.color);
+            }
+           else if (controlType == "preparePaint") {
+                var app = windowList[windowId].data.game;
+                app.preparePaint(app.canvas, value.x, value.y)
             }
         }
     }
