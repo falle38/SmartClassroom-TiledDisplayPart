@@ -80,7 +80,7 @@ function loadPdf(windowId, url) {
         shareMediaDisplay(windowId, "pdf", "PDF", false, data);
         var width = $('div.display').width();
         var height = $('div.display').height();
-        shareWindowPosition(windowId, infos.position, 25, 25, width, height);
+        //shareWindowPosition(windowId, infos.position, 25, 25, width, height);
         //Load the first page
         loadPdfPage(windowId, 1);
     });

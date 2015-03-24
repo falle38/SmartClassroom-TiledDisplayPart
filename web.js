@@ -11,6 +11,7 @@ var express = require('express');
 
 var ffmpeg = require('fluent-ffmpeg');
 
+
 // create a server from the express
 var app = express.createServer(express.logger());
 
@@ -281,10 +282,10 @@ sendAudioDataToStreamList = function (data) {
 // called from client - just execute one client context (host)
 everyone.now.askRemoteMediaControl = function (windowId, mediaType, controlType, value, destination) {
     if (destination == "all") {
-        hosts[windowId].group.now.remoteMediaControl(windowId, mediaType, controlType, value);
+        everyone.now.remoteMediaControl(windowId, mediaType, controlType, value);
     }
     else if (destination == "except-host") {
-        hosts[windowId].group.now.filterRemoteMediaControl(windowId, mediaType, controlType, value, this.now.id);
+        everyone.now.filterRemoteMediaControl(windowId, mediaType, controlType, value, this.now.id);
     }
     else if(destination == "master"){
         clientList[hosts[windowId].client].object.now.remoteMediaControl(windowId, mediaType, controlType, value);
@@ -305,10 +306,10 @@ everyone.now.filterRemoteMediaControl = function (windowId, mediaType, controlTy
 // called from client - just execute one client context (host)
 everyone.now.askRemoteGameControl = function (windowId, game, controlType, value, destination) {
     if (destination == "all"){
-        hosts[windowId].group.now.remoteGameControl(windowId, game, controlType, value, this.now.id);
+       everyone.now.remoteGameControl(windowId, game, controlType, value, this.now.id);
     }
     else if (destination == "except-host") {
-        hosts[windowId].group.now.filterRemoteGameControl(windowId, game, controlType, value, this.now.id);
+        everyone.now.filterRemoteGameControl(windowId, game, controlType, value, this.now.id);
     }
     else if (destination == "master") {
         clientList[hosts[windowId].client].object.now.remoteGameControl(windowId, game, controlType, value);
@@ -321,3 +322,54 @@ everyone.now.filterRemoteGameControl = function (windowId, game, controlType, va
     if (this.now.id == clientId) { return; }
     this.now.remoteGameControl(windowId, game, controlType, value);
 };
+
+//=============================================================================
+// Web Application to communicate with the Java Server (Tableau Interactif)
+//=============================================================================
+
+var javaPort = 8081;
+var javaServer = require('net').createServer();
+
+javaServer.on('connection', function (javaSocket) {
+    var clientAddress = javaSocket.address().address + ':' + javaSocket.address().port;
+    console.log('Java ' + clientAddress + ' connected');
+
+    var firstDataListenner = function (data) {	
+        everyone.now.launchSharedMediaDisplay(nbWindow, "interactif", "TABLEAU INTERACTIF", ab2str(data))
+		nbWindow++;
+        javaSocket.removeListener('data', firstDataListenner);
+    }
+
+    javaSocket.on('data', firstDataListenner);
+
+    javaSocket.on('close', function () {
+        console.log('Java ' + clientAddress + ' disconnected');
+    });
+});
+javaServer.listen(javaPort);
+
+
+function ab2str(buf) {
+  return String.fromCharCode.apply(null, new Uint16Array(buf));
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -58,7 +58,7 @@ function addWindow(windowId, title, width, height, type, isShared) {
     //CREATE TILED DISPLAY ICON
     var iconRotation = document.createElement('label');
     iconRotation.className = 'icon-rotation';
-    iconRotation.innerHTML = "M";
+    iconRotation.innerHTML = "R";
     
     var iconResize = document.createElement('label');
     iconResize.className = 'icon-resize';
@@ -184,18 +184,28 @@ function addWindow(windowId, title, width, height, type, isShared) {
     //The window is oriented with 0 degree of rotation
     $("#" + windowHeader.id).dblclick(function (event) {
         var windowId = windowDiv.id.split('window')[1];
-        askWindowRotation(windowId, -windowList[windowId].angle);
+       if (!isShared) {
+			updateWindowAngle(windowId, infos.position,-windowList[windowId].angle);
+		}
+		else{
+			shareWindowAngle(windowId, infos.position,-windowList[windowId].angle);
+		}
         
     });
     //The window is oriented with 0 degree of rotation
     jester(windowHeader).doubletap(function (event) {
         var windowId = windowDiv.id.split('window')[1];
-        askWindowRotation(windowId, -windowList[windowId].angle);
+		if (!isShared) {
+			updateWindowAngle(windowId, infos.position,-windowList[windowId].angle);
+		}
+		else{
+			shareWindowAngle(windowId, infos.position,-windowList[windowId].angle);
+		}
         
     });
     
     
-    interact('.window')
+    interact(windowDiv)
     .resizable({
         edges: { left: true, right: true, bottom: true, top: true }
     })
@@ -204,7 +214,7 @@ function addWindow(windowId, title, width, height, type, isShared) {
         var rect = { "height" : event.rect.height, "width": event.rect.width }
         var delta = { "left" : event.deltaRect.left, "top": event.deltaRect.top }
         var e = { "rect" : rect, "deltaRect": delta }
-        if (windowList[windowId].isShared) {
+        if (isShared) {
             //Resize all windows with ID windowId
             shareWindowSize(windowId, e);
         }
@@ -218,7 +228,7 @@ function addWindow(windowId, title, width, height, type, isShared) {
     interact(windowDiv).gesturable({
         onmove: function (event) {
             if (windowList[windowId].modificationType != "rotation") return;
-            if (windowList[windowId].isShared) {
+            if (isShared) {
                 //Rotate all windows with ID windowId
                 shareWindowAngle(windowId, infos.position, event.da);
             }
@@ -685,6 +695,19 @@ function fullWindow(canvas) {
             
             updateCanvas(windowId, backing_canvas.toDataURL("image/jpeg"));
         }
+		
+		var timeoutIdentifier;
+		var fullscreenControlListener = function (e) {
+			$("#fullscreen-controls-id").slideDown(200);
+			
+			if (timeoutIdentifier) {
+				clearTimeout(timeoutIdentifier);
+			}
+			timeoutIdentifier = setTimeout(function () {
+				$("#fullscreen-controls-id").slideUp(200);
+			}, 2500);
+		}
+		canvasFullscreen.addEventListener("mousemove", fullscreenControlListener, false);
         
         var fullscreenButton = document.getElementById('close-fullscreen');
         var draw = canvasFullscreen.getContext('2d');
@@ -797,18 +820,7 @@ function createFullscreenCanvas() {
     canvasFullscreen.style.display = "none";
     //canvasFullscreen.style.zIndex = "1";  
     $("body").append(canvasFullscreen);
-    var timeoutIdentifier;
-    var fullscreenControlListener = function (e) {
-        $("#fullscreen-controls-id").slideDown(200);
-        
-        if (timeoutIdentifier) {
-            clearTimeout(timeoutIdentifier);
-        }
-        timeoutIdentifier = setTimeout(function () {
-            $("#fullscreen-controls-id").slideUp(200);
-        }, 2500);
-    }
-    canvasFullscreen.addEventListener("mousemove", fullscreenControlListener, false);
+   
 }
 
 
@@ -862,7 +874,12 @@ function initializeEventListener() {
         //e.currentTarget.parentElement.parentElement.parentElement.parentElement.removeChild(e.currentTarget.parentElement.parentElement.parentElement);
         
         var windowId = e.currentTarget.parentElement.parentElement.parentElement.id.split('window')[1];
-        askCloseWindow(windowId);
+		if (windowList[windowId].type != "interactif") {
+			askCloseWindow(windowId);
+		}
+		else{
+			closeWindow(windowId);
+		}
     });
     
     $(".display").on("touchstart mousedown", "label.icon-fullscreen", function (e) {
@@ -884,7 +901,7 @@ function initializeEventListener() {
         if (windowList[windowId].type == "game") {
             askRemoteGameControl(windowId, "ping-pong", "tiled-display", "", "all");
         }
-        else {
+        else if (windowList[windowId].type != "interactif"){
             askRemoteMediaControl(windowId, "all", "tiled-display", infos.position, "all");
         }
     });

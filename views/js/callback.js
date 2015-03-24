@@ -147,9 +147,11 @@ $(document).ready(function () {
         //If the window is on the display
         //if (left >= 0 && left <= width && top >= 0 && top <= height && (left + windowWidth) >= 0 && (left + windowWidth) <= width && (top + windowHeight) >= 0 && (top + windowHeight) <= height) {
         if (left >= (0 + 20) && left <= (width - 20) && top >= (0 + 20) && top <= (height - 20) && (left + windowWidth) >= (0 + 20) && (left + windowWidth) <= (width - 20) && (top + windowHeight) >= (0 + 20) && (top + windowHeight) <= (height - 20)) {
-            if (windowList[windowId].isRotated &&  !isRotating) {
+console.log("DO ROTATION")           
+		   if (windowList[windowId].angle != 0 &&  !isRotating) {
                 console.log("DO ROTATION")
-                askWindowRotation(windowId, -windowList[windowId].angle);
+                //askWindowRotation(windowId, -windowList[windowId].angle);
+				shareWindowAngle(windowId, infos.position,-windowList[windowId].angle);
             }
         }
     };
@@ -245,16 +247,20 @@ $(document).ready(function () {
         else if (type == "drawing") {
                 launchDrawing(windowId, false);
         }
+		else if (type == "interactif") {
+                launchInteractifMedia(windowId, data);
+				return;
+        }
         else {
             createCanvas(windowId, title, 400, 300, type, false, true, data);
-        }
-        
-        if (data.masterPosition.j <= ((rows / 2) - 1) && infos.position.j > ((rows / 2) - 1) ) {
-                windowRotation(windowId, 180);
-        }
-        else if (data.masterPosition.j > ((rows / 2) - 1) && infos.position.j <= ((rows / 2) - 1)) {
-                windowRotation(windowId, 180);
-        }
+
+			if (data.masterPosition.j <= ((rows / 2) - 1) && infos.position.j > ((rows / 2) - 1) ) {
+					windowRotation(windowId, 180);
+			}
+			else if (data.masterPosition.j > ((rows / 2) - 1) && infos.position.j <= ((rows / 2) - 1)) {
+					windowRotation(windowId, 180);
+			}
+		}
         // initializeAudioplayer(now.id, windowId);
         ReadyToReceiveMedia(windowId, type);
     };
