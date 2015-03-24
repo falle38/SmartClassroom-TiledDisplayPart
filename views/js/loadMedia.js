@@ -71,7 +71,7 @@ function loadInputFile(div) {
 // LOAD PDF AND SHARE IT TO OTHER CLIENTS
 //=============================================================================
 function loadPdf(windowId, url) {
-    PDFJS.getDocument('/static/helloworld.pdf').then(function (pdf) {
+    PDFJS.getDocument(url).then(function (pdf) {
         //PDFJS.disableWorker = true;
         var data = { "masterPosition":infos.position, "pdf": pdf, "currentPosition": 1, "total": pdf.numPages};
         createCanvas(windowId, "PDF", 400, 300, "pdf", true, true, data);
@@ -80,7 +80,7 @@ function loadPdf(windowId, url) {
         shareMediaDisplay(windowId, "pdf", "PDF", false, data);
         var width = $('div.display').width();
         var height = $('div.display').height();
-        //shareWindowPosition(windowId, infos.position, 25, 25, width, height);
+        shareWindowPosition(windowId, infos.position, 25, 25, width, height);
         //Load the first page
         loadPdfPage(windowId, 1);
     });

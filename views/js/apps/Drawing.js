@@ -29,12 +29,12 @@
     var ctx = app.canvas.getContext('2d');
     onPaint = function () {
         var color;
-        if (isMaster) {
-            color = 'blue';
-        }
-        else {
-            color = 'red';
-        }
+        
+        if (infos.orientation == "NW") { color = 'blue'; }
+        if (infos.orientation == "NE") { color = 'green'; }
+        if (infos.orientation == "SW") { color = 'red'; }
+        if (infos.orientation == "SE") { color = 'yellow'; }
+        
         app.paint(app.canvas, app.mouse.x, app.mouse.y, color)
         askRemoteGameControl(windowId, "drawing", "paint", { "x": app.mouse.x, "y": app.mouse.y, "color": color}, "except-host");
     }
@@ -43,11 +43,8 @@
     trackPosition = function (e) {
         if (e.type == "touchmove") {
             e.preventDefault();
-            
-            var x = e.changedTouches[0].pageX;
-            var y = e.changedTouches[0].pageY;
-            x = e.changedTouches[0].pageX - $("#" + canvas.parentElement.parentElement.id).position().left;
-            y = e.changedTouches[0].pageY - $("#" + canvas.parentElement.parentElement.id).position().top - $("#" + canvas.parentElement.id).position().top - 10;
+            var x = e.changedTouches[0].pageX - $("#" + canvas.parentElement.parentElement.id).position().left;
+            var y = e.changedTouches[0].pageY - $("#" + canvas.parentElement.parentElement.id).position().top - $("#" + canvas.parentElement.id).position().top - 10;
         }
         else {
             var x = e.offsetX;
@@ -73,6 +70,10 @@
     }, false);
     
     canvas.addEventListener('touchstart', function (e) {
+        x = e.changedTouches[0].pageX - $("#" + canvas.parentElement.parentElement.id).position().left;
+        y = e.changedTouches[0].pageY - $("#" + canvas.parentElement.parentElement.id).position().top - $("#" + canvas.parentElement.id).position().top - 10;
+        app.mouse.x = x;
+        app.mouse.y = y;
         app.preparePaint(app.canvas, app.mouse.x, app.mouse.y)
         askRemoteGameControl(windowId, "drawing", "preparePaint", { "x": app.mouse.x, "y": app.mouse.y }, "except-host");
         canvas.addEventListener('touchmove', onPaint, false);

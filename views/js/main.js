@@ -185,10 +185,10 @@ function addWindow(windowId, title, width, height, type, isShared) {
     $("#" + windowHeader.id).dblclick(function (event) {
         var windowId = windowDiv.id.split('window')[1];
        if (!isShared) {
-			updateWindowAngle(windowId, infos.position,-windowList[windowId].angle);
+			updateWindowAngle(windowId, true,-windowList[windowId].angle);
 		}
 		else{
-			shareWindowAngle(windowId, infos.position,-windowList[windowId].angle);
+			shareWindowAngle(windowId, true,-windowList[windowId].angle);
 		}
         
     });
@@ -196,16 +196,16 @@ function addWindow(windowId, title, width, height, type, isShared) {
     jester(windowHeader).doubletap(function (event) {
         var windowId = windowDiv.id.split('window')[1];
 		if (!isShared) {
-			updateWindowAngle(windowId, infos.position,-windowList[windowId].angle);
+			updateWindowAngle(windowId, true,-windowList[windowId].angle);
 		}
 		else{
-			shareWindowAngle(windowId, infos.position,-windowList[windowId].angle);
+			shareWindowAngle(windowId, true,-windowList[windowId].angle);
 		}
         
     });
     
     
-    interact(windowDiv)
+    interact('#' + windowDiv.id)
     .resizable({
         edges: { left: true, right: true, bottom: true, top: true }
     })
@@ -225,16 +225,16 @@ function addWindow(windowId, title, width, height, type, isShared) {
     });
     
     
-    interact(windowDiv).gesturable({
+    interact('#' + windowDiv.id).gesturable({
         onmove: function (event) {
             if (windowList[windowId].modificationType != "rotation") return;
             if (isShared) {
                 //Rotate all windows with ID windowId
-                shareWindowAngle(windowId, infos.position, event.da);
+                shareWindowAngle(windowId, false, event.da);
             }
             else {
                 //Rotate this window
-                updateWindowAngle(windowId, infos.position, event.da);
+                updateWindowAngle(windowId, false, event.da);
             }
         }
     });

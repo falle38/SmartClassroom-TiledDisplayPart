@@ -1,7 +1,7 @@
 ﻿
 launchPingPongGame = function (windowId, isMaster) {
     var data = {"masterPosition": infos.position};
-    var canvas = createCanvas(windowId, "PING PONG", 400, 300, "game", isMaster, true, data);
+    var canvas = createCanvas(windowId, "PING PONG", 400, 300, "game", isMaster, false, data);
     if (isMaster) {
         shareMediaDisplay(windowId, "ping-pong", "PING PONG", false, data);
     }

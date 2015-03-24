@@ -165,17 +165,27 @@ console.log("DO ROTATION")
         isRotating = true;
         setTimeout(function () {isRotating = false;}, 1000);
         window.style.WebkitTransitionDuration = '1s';
-        window.style.webkitTransform = 'rotate(' + angle + 'deg)';
+        window.style.webkitTransform = 'rotate(' + angle + 'deg)' + ' translate(' 
+                              + windowList[windowId].offset.x + 'px,' 
+                              + windowList[windowId].offset.y + 'px)';;
         windowList[windowId].isRotated = !windowList[windowId].isRotated;
     };
     
     // called from server - to update the image data just for this client page
     // the data is a base64-encoded image
-    updateWindowAngle = function (windowId, positionRemoteClient, degree) {
+    updateWindowAngle = function (windowId, shouldEase, degree) {
         var rows = 2;
         var window = getWindow(windowId);
-        window.style.removeProperty('-webkit-transition');
-        window.style.removeProperty('transition');
+        if (!shouldEase) {
+            window.style.removeProperty('-webkit-transition');
+            window.style.removeProperty('transition');
+        }
+        else {
+            isRotating = true;
+            setTimeout(function () { isRotating = false; }, 1000);
+            window.style.WebkitTransitionDuration = '1s';
+        }
+        
 
         var angle = (windowList[windowId].angle + degree)%360;
         
@@ -194,7 +204,9 @@ console.log("DO ROTATION")
         //    }
         //}
         windowList[windowId].angle = angle;
-        window.style.webkitTransform = 'rotate(' + angle + 'deg)';
+        window.style.webkitTransform = 'rotate(' + angle + 'deg)' + ' translate(' 
+                              + windowList[windowId].offset.x + 'px,' 
+                              + windowList[windowId].offset.y + 'px)';
     };
     
     resizeWindow = function (windowId, event) {

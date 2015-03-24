@@ -35,24 +35,3 @@ getTipStyle = function (el) {
     return str;
 };
     
-    
-    //for (var i = 0; i < n_r; i++) {
-    //    styles.push('');
-        
-        //r[i].addEventListener('input', function () {
-        //    var idx = this.id.split('r')[1];
-        //    document.getElementById('video-time1').innerHTML = this.value;
-        //    if (this.classList.contains('fill')) {
-        //        styles[idx] = getFillStyle(this);
-        //    }
-        //    else {
-        //        styles[idx] = '';
-        //    }
-            
-        //    if (this.classList.contains('tip')) {
-        //        styles[idx] += getTipStyle(this);
-        //    }
-            
-        //    s.textContent = styles.join('');
-        //}, false);
-    //}
