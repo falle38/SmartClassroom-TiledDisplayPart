@@ -863,7 +863,8 @@
 
         } else if (typeof this.options.constrainTo === 'string') {
                 
-            
+            /*AJOUT FONCTIONNALITE SUPPLEMENTAIRE*/
+                        
             if (this.options.maxPosition == 'none') {
                 lowerXLimit = 0;
                 lowerYLimit = 0;
@@ -908,7 +909,7 @@
                     }
                 }
             }
-
+            /*FIN AJOUT FONCTIONNALITE SUPPLEMENTAIRE*/
 
       // is our object trying to move outside lower X & Y limits?
       if ( this.pos.x + dx < lowerXLimit )              hash.x = lowerXLimit;

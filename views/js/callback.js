@@ -562,7 +562,7 @@ console.log("DO ROTATION")
     };
     
     //=============================================================================
-    // REMOTE CONTROL FOR SYNCHRONIZING PING-PONG GAME BETWEEN CLIENTS
+    // REMOTE CONTROL FOR SYNCHRONIZING PING-PONG GAME AND DRAWING BETWEEN CLIENTS
     //=============================================================================
     remoteGameControl = function (windowId, game, controlType, value) {
         if (game == "ping-pong") {

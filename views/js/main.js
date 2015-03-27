@@ -1,17 +1,21 @@
 
 
-var notHead = false;
+
 //TRUE IF DISPLAYING FULLSCREEN 
 var fullWindowState;
-//SAVE CANVAS DATA (display state, media data etc...)
+//Save datas of the window in a List (display state, media data etc...)
 var windowList = new Object();
+//True if the body is rotated to 180 degree
 var isRotated = false;
-var minScale = 0.1;
-var maxScale = 2;
+//True if the user has not selected the header of the window
+var notHead = false;
 //=================================================================================
 // MANAGE DISPLAY DIV : (Rotation etc...)
 //=================================================================================
 
+/**
+ * Do a rotation to 180 degree of the body
+ */
 function rotateDisplayDiv() {
     var display = document.body;
     if (!isRotated) {
@@ -33,6 +37,16 @@ function rotateDisplayDiv() {
 // CREATE A NEW HTML/CSS/JQUERY WINDOW ACCORDING TO AN ID AND MANAGE DRAG AND DROP
 //=================================================================================
 
+/**
+ * Create a HTML window and set drag and drop, resize and rotation 
+ * 
+ * @param windowId : the unique ID of the window 
+ * @param title : the title of the window that will be set in the header
+ * @param width : the width of the window
+ * @param height : the height of the window
+ * @param type : the type of the media or app that will be set in the window
+ * @param isShared : if the window has to share its position, angle, size... to others clients
+ */
 function addWindow(windowId, title, width, height, type, isShared) {
     //CREATE PRINCIPAL WINDOW DIV
     var windowDiv = document.createElement('div');
@@ -110,11 +124,16 @@ function addWindow(windowId, title, width, height, type, isShared) {
         if (infos.position.j <= ((rows / 2) - 1)) {
             orientation = 'reversed'
         }
+        //The max coordinate x and y of all the tables
         var maxPosition;
         if (isShared) {
-            maxPosition = { "i": (2 - 1), "j": (2 - 1) };
+            //In this configuration, there is two lines and two columns
+            var rows = 2;
+            var cols = 2;
+            maxPosition = { "i": (rows - 1), "j": (cols - 1) };
         }
         else {
+            //With none value, the window cannot go outside the div with className = display
             maxPosition = 'none';
             orientation = 'normal';
         }
@@ -122,6 +141,7 @@ function addWindow(windowId, title, width, height, type, isShared) {
         if (windowList[windowId].modificationType != "dragging") return;
         var isRotating = false;
         $("#" + windowDiv.id).pep({
+
             constrainTo: 'parent',
             velocityMultiplier: 5,
             tablePosition: infos.position,
@@ -137,42 +157,20 @@ function addWindow(windowId, title, width, height, type, isShared) {
             drag: function (ev, obj) {
                 var width = $('div.display').width();
                 var height = $('div.display').height();
-                var top = obj.$el.context.offsetTop;
-                var left = obj.$el.context.offsetLeft;
-                var windowWidth = $('#window' + windowId).width();
-                var windowHeight = $('#window' + windowId).height();
                 if (isShared) {
                     shareWindowPosition(windowId, infos.position, obj.$el.context.offsetTop, obj.$el.context.offsetLeft, width, height);
-                    //if (left >= (0 + 20) && left <= (width - 20) && top >= (0 + 20) && top <= (height - 20) && (left + windowWidth) >= (0 + 20) && (left + windowWidth) <= (width - 20) && (top + windowHeight) >= (0 + 20) && (top + windowHeight) <= (height - 20)) {
-                    //    if (windowList[windowId].isRotated && !isRotating) {
-                    //        isRotating = true;
-                    //        askWindowRotation(windowId, -windowList[windowId].angle);
-                    //    }
-                    //}
                 }
             },
             
             easing: function (ev, obj) {
                 var width = $('div.display').width();
                 var height = $('div.display').height();
-                var top = obj.$el.context.offsetTop;
-                var left = obj.$el.context.offsetLeft;
-                var windowWidth = $('#window' + windowId).width();
-                var windowHeight = $('#window' + windowId).height();
                 if (isShared) {
                     shareWindowPosition(windowId, infos.position, obj.$el.context.offsetTop, obj.$el.context.offsetLeft, width, height);
-                    //if (left >= (0 + 20) && left <= (width - 20) && top >= (0 + 20) && top <= (height - 20) && (left + windowWidth) >= (0 + 20) && (left + windowWidth) <= (width - 20) && (top + windowHeight) >= (0 + 20) && (top + windowHeight) <= (height - 20)) {
-                    //    if (windowList[windowId].isRotated && !isRotating) {
-                    //        isRotating = true;
-                    //        askWindowRotation(windowId, -windowList[windowId].angle);
-                    //    }
-                    //}
                 }
             },
             stop: function (ev, obj) {
-                var vel = obj.velocity();
-                //console.log(vel);
-                
+                var vel = obj.velocity();                
                 if (vel.x > 1500 || vel.y > 1500 || vel.x < -1500 || vel.y < -1500) {
                     console.log("TABLE SUIVANTE");
                     //obj.$el.css({ background : 'green'}); 
@@ -181,7 +179,7 @@ function addWindow(windowId, title, width, height, type, isShared) {
             }
         });
     });
-    //The window is oriented with 0 degree of rotation
+    //The window is rotated to 0 like the beginning - Mouse Event
     $("#" + windowHeader.id).dblclick(function (event) {
         var windowId = windowDiv.id.split('window')[1];
        if (!isShared) {
@@ -192,7 +190,7 @@ function addWindow(windowId, title, width, height, type, isShared) {
 		}
         
     });
-    //The window is oriented with 0 degree of rotation
+    //The window is rotated to 0 like the beginning - Touch Event
     jester(windowHeader).doubletap(function (event) {
         var windowId = windowDiv.id.split('window')[1];
 		if (!isShared) {
@@ -204,7 +202,7 @@ function addWindow(windowId, title, width, height, type, isShared) {
         
     });
     
-    
+    //The user can resize the window with the edges
     interact('#' + windowDiv.id)
     .resizable({
         edges: { left: true, right: true, bottom: true, top: true }
@@ -224,7 +222,7 @@ function addWindow(windowId, title, width, height, type, isShared) {
         }
     });
     
-    
+    //The user can rotate the window with two fingers
     interact('#' + windowDiv.id).gesturable({
         onmove: function (event) {
             if (windowList[windowId].modificationType != "rotation") return;
@@ -241,7 +239,7 @@ function addWindow(windowId, title, width, height, type, isShared) {
     return windowDiv;
 }
 
-//GET WINDOW
+//Get the HTML window
 function getWindow(windowId) {
     return document.getElementById('window' + windowId);
 }
@@ -249,6 +247,8 @@ function getWindow(windowId) {
 //=============================================================================
 // CREATE A AUDIOPLAYER TO PLAY ALL STREAMED AUDIO
 //=============================================================================
+
+//Initialize an audio link for the HTML Flowplayer (USELESS)
 function initializeAudioLink(id) {
     var audioLink = document.createElement('a');
     //audioLink.href = "/audio" + id;
@@ -259,6 +259,13 @@ function initializeAudioLink(id) {
     $('body').append(audioLink);
 }
 
+//Create the flowplayer bound to the url /audio + id
+/**
+ * Create a HTML Canvas in the window according to a specific media or app 
+ * 
+ * @param id : the id of the client (1,2,3 or 4) 
+ * @param windowId : the unique ID of the window 
+ */
 function initializeAudioplayer(id, windowId) {
     console.log("AUDIOPLAY LAUNCHING" + id);
     var audioplayer = flowplayer("audioPlayer", "/includes/flowplayer.swf", {
@@ -279,6 +286,18 @@ function initializeAudioplayer(id, windowId) {
 // CREATE CANVAS INTO HTML WINDOW FOR DISPLAYING MEDIA (VIDEO, PDF, APPS etc..)
 //=============================================================================
 
+/**
+ * Create a HTML Canvas in the window according to a specific media or app 
+ * 
+ * @param windowId : the unique ID of the window 
+ * @param title : the title of the window that will be set in the header
+ * @param width : the width of the window
+ * @param height : the height of the window
+ * @param type : the type of the media or app that will be set in the window
+ * @param isMaster : true if this client is the master of the object
+ * @param isShared : if the window has to share its position, angle, size... to others clients
+ * @param data : some useful data of media or app (like duration of the video etc...) 
+ */
 function createCanvas(windowId, title, width, height, type, isMaster, isShared, data) {
     var canvas = document.createElement('canvas');
     canvas.id = 'canvas' + windowId;
@@ -363,20 +382,18 @@ function reloadCanvas(canvas) {
     draw.drawImage(backing_canvas, 0, 0, canvas.width, canvas.height);
 }
 
-function fitCanvasToContainer(canvas) {
-    // ...then set the internal size to match
-    canvas.width = canvas.parentElement.offsetWidth;
-    canvas.height = canvas.parentElement.offsetHeight;
-}
-
-function activateCanvasRotation(canvas) {
-
-}
 
 //=============================================================================
 // CREATE A CONTROLS BAR FOR CANVAS DISPLAYING VIDEOS
 //=============================================================================
 
+/**
+ * Create a HTML Video Controls in the window
+ * 
+ * @param windowId : the unique ID of the window 
+ * @param isFullscreen : true if the window is Fullscreen
+ * @param isMaster : true if this client is the master of the object
+ */
 function createVideoControls(windowId, isFullscreen, isMaster) {
     if (isFullscreen) {
         var ID = 0;
@@ -496,6 +513,13 @@ function createVideoControls(windowId, isFullscreen, isMaster) {
 // CREATE A CONTROLS BAR FOR CANVAS DISPLAYING PDF
 //=============================================================================
 
+/**
+ * Create a HTML Pdf Controls in the window
+ * 
+ * @param windowId : the unique ID of the window 
+ * @param isFullscreen : true if the window is Fullscreen
+ * @param isMaster : true if this client is the master of the object
+ */
 function createPdfControls(windowId, isFullscreen, isMaster) {
     if (isFullscreen) {
         var ID = 0;
@@ -583,6 +607,11 @@ function createPdfControls(windowId, isFullscreen, isMaster) {
 // MANAGE FULLSCREEN
 //=============================================================================
 
+/**
+ * Display the data of the canvas to the fullscreen canvas
+ * 
+ * @param canvas : the canvas which has the copied to the fullscreen canvas
+ */
 function fullWindow(canvas) {
     
     if (!fullWindowState) {
@@ -813,6 +842,9 @@ function cancelFullScreen() {
     }
 }
 
+/**
+ * Create a HTML Canvas that has to be displayed fullscreen
+ */
 function createFullscreenCanvas() {
     var canvasFullscreen = document.createElement('canvas');
     canvasFullscreen.className = "canvasFullWindow";
